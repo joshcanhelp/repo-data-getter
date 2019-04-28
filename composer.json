@@ -1,0 +1,26 @@
+{
+    "name": "auth0/dx-sdk-data",
+    "description": "Grab data from GitHub and store in a DB.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Josh Cunningham",
+            "email": "josh@joshcanhelp.com"
+        }
+    ],
+    "require": {
+        "php" : "^7.1",
+        "league/uri": "^5.3",
+        "vlucas/phpdotenv": "^3.3",
+        "guzzlehttp/guzzle": "~6.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit" : "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DxSdk\\Data\\": "src/"
+        }
+    }
+}
