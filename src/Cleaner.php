@@ -42,12 +42,12 @@ class Cleaner {
 	}
 
 	/**
-	 * @param $text
+	 * @param $data
 	 *
 	 * @return int
 	 */
-	public static function absint( $text ): int {
-		return abs( intval( $text ) );
+	public static function absint( $data ): int {
+		return abs( intval( $data ) );
 	}
 
 	/**
@@ -68,6 +68,16 @@ class Cleaner {
 		$repoNames = array_map( '\DxSdk\Data\Cleaner::csvFirstCol', $repoNames );
 		$repoNames = array_filter( $repoNames, '\DxSdk\Data\Cleaner::isValidRepoName' );
 		return $repoNames;
+	}
+
+	/**
+	 * @param array $repoNames
+	 *
+	 * @return array
+	 */
+	public static function orgsFromRepos( array $repoNames ): array {
+		$orgNames = array_map( function($el) { return static::orgName( $el ); }, $repoNames );
+		return array_unique( $orgNames );
 	}
 
 	/**

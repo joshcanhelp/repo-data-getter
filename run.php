@@ -6,6 +6,7 @@ require 'vendor/autoload.php';
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 use DxSdk\Data\Files\StatsCsv;
+use \DxSdk\Data\Files\ReferrerCsv;
 use DxSdk\Data\Cleaner;
 use DxSdk\Data\Logger;
 
@@ -15,9 +16,10 @@ $dotenv = Dotenv::create(__DIR__);
 $dotenv->load();
 
 // Date/time to use in file names.
-$now = date( 'Y-m-d\TU' );
+define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
+define( 'DATE_NOW', date( 'Y-m-d\TU' ) );
 
-$logger = new Logger( $now );
+$logger = new Logger();
 
 ////
 ///
@@ -43,56 +45,43 @@ $repoNames = Cleaner::repoNamesArray( $repoNames );
 // Iterate through all repo names and get GitHub data.
 // This will be decoded to use in memory, then combined and stored as the raw JSON.
 //
-$allRepoData = [];
-$orgNames = [];
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN') );
+$globalStatCsv = new StatsCsv( 'global' );
+$referrerCsv = new ReferrerCsv();
+$orgCsvs = array_flip( Cleaner::orgsFromRepos( $repoNames ) );
+foreach( $orgCsvs as $orgName => $value ) {
+	$orgCsvs[$orgName] = new StatsCsv( $orgName );
+}
 
 foreach ( $repoNames as $repoName ) {
-	$orgNames[] = Cleaner::orgName( $repoName );
-	$allRepoData[$repoName] = [];
+	$orgName = Cleaner::orgName( $repoName );
+	$repoFileName = str_replace( '/', '|', $repoName );
+	$repoStatCsv = new StatsCsv( $repoFileName );
+	$repoJsonFileName = $repoFileName . '--' . DATE_NOW . '.json';
 
-	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficPaths', 'TrafficViews'] as $dataType ) {
-		// Community profiles do not exist for private repos.
-		// Skip to next data type.
-		if ( 'Community' === $dataType && $allRepoData[$repoName]['Repo']['private'] ) {
+	$repoData = [];
+	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficRefs', 'TrafficViews'] as $dataType ) {
+
+		// Community profiles do not exist for private repos; skip to next data type.
+		if ( 'Community' === $dataType && $repoData['Repo']['private'] ) {
+			continue;
+		}
+
+		// No traffic tracking needed for private repos.
+		if ( 0 === strpos( 'Traffic', $dataType ) && $repoData['Repo']['private'] ) {
 			continue;
 		}
 
 		try {
 			$methodName              = 'get' . $dataType;
 			$dataRaw                 = $gh->$methodName( $repoName );
-			$allRepoData[$repoName][$dataType] = json_decode( $dataRaw, true );
+			$repoData[$dataType] = json_decode( $dataRaw, true );
 		} catch ( Exception $e ) {
-			// Latest release will 404 if releases are not used, no need to log.
-			if ( 404 !== $e->getCode() && 'LatestRelease' !== $dataType ) {
-				$logMsg = sprintf( 'Failed getting %s data for %s: %s', $dataType, $repoName, $e->getMessage() );
-				$logger->log( $logMsg );
-			}
-			$allRepoData[$repoName][$dataType] = [];
+			$logMsg = sprintf( 'Failed getting %s data for %s: %s', $dataType, $repoName, $e->getMessage() );
+			$logger->log( $logMsg );
+			$repoData[$dataType] = [];
 		}
 	}
-
-	$fileName = str_replace( '/', '|', $repoName ) . '--' . $now . '.json';
-	$logger->log( 'Saving to ' . $fileName );
-	file_put_contents( 'json/' . $fileName, json_encode( $allRepoData[$repoName] ) );
-}
-$orgNames = array_unique( $orgNames );
-
-
-////
-///
-// Iterate through the decoded data to store per-repo stats and all repo stats.
-//
-$globalStatCsv = new StatsCsv( 'global', $now );
-
-$orgCsvs = [];
-foreach ( $orgNames as $orgName ) {
-	$orgCsvs[$orgName] = new StatsCsv( $orgName, $now );
-}
-
-foreach ( $allRepoData as $repoName => $repoData ) {
-	$orgName = explode( '/', $repoName )[0];
-	$repoStatCsv = new StatsCsv( str_replace( '/', '|', $repoName ), $now );
 
 	foreach ( StatsCsv::ELEMENTS as $index => $stat ) {
 		$statKeyParts = explode( '|', $stat );
@@ -110,8 +99,16 @@ foreach ( $allRepoData as $repoName => $repoData ) {
 		$repoStatCsv->addData( $index, $statValue );
 	}
 
+	if ( ! empty( $repoData['TrafficRefs'] ) ) {
+		$referrerCsv->addData( $repoData['TrafficRefs'] );
+	}
+
+	$jsonHandle = fopen( DATA_SAVE_PATH_SLASHED . 'json/' . $repoJsonFileName, 'w' );
+	fwrite( $jsonHandle, json_encode( $repoData ) );
+	fclose( $jsonHandle );
+
 	try {
-		$repoStatCsv->putClose( $now );
+		$repoStatCsv->putClose();
 	} catch ( \Exception $e ) {
 		$logger->log( 'Failed saving stats for ' . $repoName . ': ' . $e->getMessage() );
 	}
@@ -119,14 +116,15 @@ foreach ( $allRepoData as $repoName => $repoData ) {
 
 foreach ( $orgCsvs as $orgName => $orgCsv ) {
 	try {
-		$orgCsv->putClose( $now );
+		$orgCsv->putClose();
 	} catch ( \Exception $e ) {
 		$logger->log( 'Failed saving stats for ' . $orgName . ': ' . $e->getMessage() );
 	}
 }
 
 try {
-	$globalStatCsv->putClose( $now );
+	$globalStatCsv->putClose();
+	$referrerCsv->putClose();
 } catch ( \Exception $e ) {
 	$logger->log( 'Failed saving global stats: ' . $e->getMessage() );
 }

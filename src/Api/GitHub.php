@@ -2,6 +2,8 @@
 
 namespace DxSdk\Data\Api;
 
+use \GuzzleHttp\Exception\ClientException;
+
 final class GitHub extends HttpClient {
 
 	const HEADER_TOPICS = 'application/vnd.github.mercy-preview+json';
@@ -52,7 +54,16 @@ final class GitHub extends HttpClient {
 	 */
 	public function getLatestRelease( string $name ): string {
 		$path = $name . '/releases/latest';
-		return $this->get( $path, $this->baseHeaders )->getBody()->getContents();
+		try {
+			$response = $this->get( $path, $this->baseHeaders );
+		} catch ( ClientException $e ) {
+			// 404 errors for the latest release endpoint means that releases are not used for this repo.
+			if ( 404 === $e->getCode() ) {
+				return '{}';
+			}
+			throw $e;
+		}
+		return $response->getBody()->getContents();
 	}
 
 	/**

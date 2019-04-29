@@ -2,11 +2,7 @@
 vendor
 
 # ignore files in data folders
-csv/stats/*
-json/*
-logs/*
-
-# ... but keep the folder
-!csv/stats/.keep
-!json/.keep
-!logs/.keep
+test-data
+data/csv/*.csv
+data/json/*.json
+data/logs/*.txt
