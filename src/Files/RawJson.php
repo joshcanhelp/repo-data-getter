@@ -7,7 +7,7 @@ class RawJson {
 	use Files;
 
 	public function __construct( string $fileName ) {
-		$this->setWriteHandle( 'json/'. $fileName . '--' . DATE_NOW . '.json' );
+		$this->setWriteHandle( 'json/'. $fileName . SEPARATOR . DATE_NOW . '.json' );
 	}
 
 	/**

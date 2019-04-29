@@ -6,9 +6,14 @@ namespace DxSdk\Data\Files;
 class StatsCsv extends Csv {
 
 	const ELEMENTS = [
-		'Repo|stargazers_count', 'Repo|subscribers_count', 'Repo|forks', 'Repo|open_issues_count',
-		'TrafficClones|count', 'TrafficClones|uniques',
-		'TrafficViews|count', 'TrafficViews|uniques',
+		'Repo' . SEPARATOR . 'stargazers_count',
+		'Repo' . SEPARATOR . 'subscribers_count',
+		'Repo' . SEPARATOR . 'forks',
+		'Repo' . SEPARATOR . 'open_issues_count',
+		'TrafficClones' . SEPARATOR . 'count',
+		'TrafficClones' . SEPARATOR . 'uniques',
+		'TrafficViews' . SEPARATOR . 'count',
+		'TrafficViews' . SEPARATOR . 'uniques',
 	];
 
 	private $data = [];
@@ -21,7 +26,7 @@ class StatsCsv extends Csv {
 	 * @throws \Exception
 	 */
 	public function __construct( string $fileName ) {
-		$headers = array_merge( [ 'Date' ], self::ELEMENTS );
+		$headers = array_merge( [ 'Date UTC', 'Timecode UTC' ], self::ELEMENTS );
 		$elements = array_keys( self::ELEMENTS );
 		$this->data = array_map( function () { return 0; }, $elements );
 		parent::__construct( $fileName, $headers );
@@ -41,7 +46,10 @@ class StatsCsv extends Csv {
 	 */
 	public function putClose(): bool {
 		$row = array_values( $this->data );
-		$row = array_merge( [ DATE_NOW ], $row );
+		$date = explode( '_', DATE_NOW )[0];
+		$time = explode( '_', DATE_NOW )[1];
+		$time = str_replace( '-', ':', $time );
+		$row = array_merge( [ $date . SEPARATOR . $time, TIME_NOW ], $row );
 		$this->putRow( $row );
 		return $this->close();
 	}

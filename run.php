@@ -1,15 +1,18 @@
 <?php
 set_time_limit(0);
+date_default_timezone_set ( 'Europe/London' );
 
 require 'vendor/autoload.php';
 
+use DxSdk\Data\Cleaner;
+use DxSdk\Data\Logger;
+
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
+
 use DxSdk\Data\Files\StatsCsv;
 use DxSdk\Data\Files\ReferrerCsv;
 use DxSdk\Data\Files\RawJson;
-use DxSdk\Data\Cleaner;
-use DxSdk\Data\Logger;
 
 use Dotenv\Dotenv;
 
@@ -18,7 +21,9 @@ $dotenv->load();
 
 // Date/time to use in file names.
 define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
-define( 'DATE_NOW', date( 'Y-m-d\TU' ) );
+define( 'SEPARATOR', '--' );
+define( 'DATE_NOW', date( 'Y-m-d_H-i-s' ) );
+define( 'TIME_NOW', date( 'U' ) );
 
 $logger = new Logger();
 
@@ -68,7 +73,7 @@ foreach( $orgCsvs as $orgName => $value ) {
 
 foreach ( $repoNames as $repoName ) {
 	$orgName = Cleaner::orgName( $repoName );
-	$repoFileName = str_replace( '/', '|', $repoName );
+	$repoFileName = str_replace( '/', SEPARATOR, $repoName );
 	$repoStatCsv = new StatsCsv( $repoFileName );
 
 	$repoData = [];
@@ -96,7 +101,7 @@ foreach ( $repoNames as $repoName ) {
 	}
 
 	foreach ( StatsCsv::ELEMENTS as $index => $stat ) {
-		$statKeyParts = explode( '|', $stat );
+		$statKeyParts = explode( SEPARATOR, $stat );
 		$dataObject = $statKeyParts[0];
 		$property = $statKeyParts[1];
 
