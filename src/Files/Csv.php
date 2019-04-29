@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace DxSdk\Data\Files;
 
-class Csv {
+abstract class Csv {
 
-	private $saveTo;
-	private $handle;
-	private $columnCount;
+	use Files;
+
+	protected $columnCount;
 
 	/**
 	 * Csv constructor.
@@ -23,12 +23,13 @@ class Csv {
 			throw new \Exception( 'No file name' );
 		}
 
-		$this->saveTo = DATA_SAVE_PATH_SLASHED . 'csv/' . $fileName . '.csv';
-		$this->handle = fopen( $this->saveTo, 'a' );
+		if ( ! $this->handle ) {
+			$this->setAppendHandle( 'csv/' . $fileName . '.csv' );
+		}
 
 		$this->columnCount = count( $headers );
 		if ( $this->columnCount && ! filesize( $this->saveTo ) ) {
-			fputcsv( $this->handle, $headers );
+			$this->putCsv( $headers );
 		}
 	}
 
@@ -43,13 +44,18 @@ class Csv {
 		if ( count( $row ) !== $this->columnCount ) {
 			throw new \Exception( 'Number of columns to add does not match number of headers' );
 		}
-		return fputcsv( $this->handle, $row );
+		return $this->putCsv( $row );
 	}
+
+	/**
+	 * @param $data
+	 *
+	 * @return mixed
+	 */
+	abstract public function addData( array $data );
 
 	/**
 	 * @return bool
 	 */
-	protected function close(): bool {
-		return fclose( $this->handle );
-	}
+	abstract public function putClose(): bool;
 }

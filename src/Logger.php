@@ -3,7 +3,11 @@ declare(strict_types=1);
 
 namespace DxSdk\Data;
 
+use DxSdk\Data\Files\Files;
+
 class Logger {
+
+	use Files;
 
 	private $theLog = [];
 
@@ -31,7 +35,9 @@ class Logger {
 		if ( isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ) {
 			$this->log( 'Done in ' . round( microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 1 ) . 's' );
 		}
-		$fileName = DATE_NOW  . '.txt';
-		return (bool) file_put_contents( 'logs/' . $fileName, $this->out() );
+
+		$logOutput = $this->out();
+		echo $logOutput;
+		return $this->writeToFile( 'logs/' . DATE_NOW . '.txt', $logOutput );
 	}
 }

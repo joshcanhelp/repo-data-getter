@@ -8,6 +8,8 @@ use function foo\func;
 
 class ReferrerCsv extends Csv {
 
+	use Files;
+
 	private $data = [];
 
 	/**
@@ -16,40 +18,36 @@ class ReferrerCsv extends Csv {
 	 * @throws \Exception
 	 */
 	public function __construct() {
-		$fileName = 'stats/all-referrers';
+		$fileName = 'all-referrers';
+		$this->setWriteHandle( 'csv/' . $fileName . '.csv' );
 		$headers = [ 'Referrer', 'Count', 'Uniques' ];
 		parent::__construct( $fileName, $headers );
 	}
 
 	/**
-	 * @param array $refArray
+	 * @param array $addData
 	 */
-	public function addData( array $refArray ) {
-		foreach( $refArray as $referrer ) {
+	public function addData( array $addData ) {
+		foreach( $addData as $referrer ) {
 			$name = Cleaner::text( $referrer['referrer'] );
 			$count = Cleaner::absint( $referrer['count'] );
 			$uniques = Cleaner::absint( $referrer['uniques'] );
-			if ( isset( $this->data[ $name ] ) ) {
-				$this->data[$name]['count'] += $count;
-				$this->data[$name]['uniques'] += $uniques;
-			} else {
-				$this->data[$name] = [
-					'count' => $count,
-					'uniques' => $uniques,
-				];
+
+			if ( ! isset( $this->data[ $name ] ) ) {
+				$this->data[$name] = [ 'count' => 0, 'uniques' => 0 ];
 			}
+
+			$this->data[$name]['count'] += $count;
+			$this->data[$name]['uniques'] += $uniques;
 		}
 	}
 
-	public function getData() {
-		return $this->data;
-	}
-
 	/**
+	 * @return bool
 	 *
 	 * @throws \Exception
 	 */
-	public function putClose() {
+	public function putClose(): bool {
 		$rows = $this->data;
 		uasort( $rows, [ $this, 'sortByCount' ] );
 		foreach ( $rows as $name => $data ) {
@@ -58,6 +56,12 @@ class ReferrerCsv extends Csv {
 		return $this->close();
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 *
+	 * @return int
+	 */
 	private function sortByCount($a, $b) {
 		if ($a['count'] == $b['count']) {
 			return 0;

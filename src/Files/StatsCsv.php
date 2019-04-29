@@ -28,11 +28,10 @@ class StatsCsv extends Csv {
 	}
 
 	/**
-	 * @param string|int $key
-	 * @param int $val
+	 * @param array $addData
 	 */
-	public function addData( $key, int $val ) {
-		$this->data[ $key ] += $val;
+	public function addData( array $addData ) {
+		$this->data[$addData[0]] += $addData[1];
 	}
 
 	/**

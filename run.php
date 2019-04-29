@@ -6,7 +6,8 @@ require 'vendor/autoload.php';
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 use DxSdk\Data\Files\StatsCsv;
-use \DxSdk\Data\Files\ReferrerCsv;
+use DxSdk\Data\Files\ReferrerCsv;
+use DxSdk\Data\Files\RawJson;
 use DxSdk\Data\Cleaner;
 use DxSdk\Data\Logger;
 
@@ -33,11 +34,16 @@ $repoCsvUrl   = 'https://docs.google.com/spreadsheets/d/e/'
 try {
 	$repoCsvNames = HttpClient::justGet( $repoCsvUrl );
 } catch ( Exception $e ) {
-	$logger->log( 'Failed getting repos from Google CSV: ' . $e->getMessage() );
+	$logger->log( 'Failed getting repos from Google CSV: ' . $e->getMessage() )->save();
 	exit;
 }
 $repoNames = explode( PHP_EOL, $repoCsvNames ) ;
 $repoNames = Cleaner::repoNamesArray( $repoNames );
+
+// Limit number of repos to process for testing.
+if ( ! empty( $argv[1] ) ) {
+	$repoNames = array_slice( $repoNames, 0, Cleaner::absint( $argv[1] ) );
+}
 
 
 ////
@@ -46,8 +52,15 @@ $repoNames = Cleaner::repoNamesArray( $repoNames );
 // This will be decoded to use in memory, then combined and stored as the raw JSON.
 //
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN') );
-$globalStatCsv = new StatsCsv( 'global' );
-$referrerCsv = new ReferrerCsv();
+
+try {
+	$globalStatCsv = new StatsCsv( 'global' );
+	$referrerCsv = new ReferrerCsv();
+} catch ( \Exception $e ) {
+	$logger->log( 'Failed opening CSV file: ' . $e->getMessage() )->save();
+	exit;
+}
+
 $orgCsvs = array_flip( Cleaner::orgsFromRepos( $repoNames ) );
 foreach( $orgCsvs as $orgName => $value ) {
 	$orgCsvs[$orgName] = new StatsCsv( $orgName );
@@ -57,7 +70,6 @@ foreach ( $repoNames as $repoName ) {
 	$orgName = Cleaner::orgName( $repoName );
 	$repoFileName = str_replace( '/', '|', $repoName );
 	$repoStatCsv = new StatsCsv( $repoFileName );
-	$repoJsonFileName = $repoFileName . '--' . DATE_NOW . '.json';
 
 	$repoData = [];
 	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficRefs', 'TrafficViews'] as $dataType ) {
@@ -94,18 +106,18 @@ foreach ( $repoNames as $repoName ) {
 			$statValue = Cleaner::absint( $repoData[$dataObject][$property] );
 		}
 
-		$globalStatCsv->addData( $index, $statValue );
-		$orgCsvs[$orgName]->addData( $index, $statValue );
-		$repoStatCsv->addData( $index, $statValue );
+		$addData = [ $index, $statValue ];
+		$globalStatCsv->addData( $addData );
+		$orgCsvs[$orgName]->addData( $addData );
+		$repoStatCsv->addData( $addData );
 	}
 
 	if ( ! empty( $repoData['TrafficRefs'] ) ) {
 		$referrerCsv->addData( $repoData['TrafficRefs'] );
 	}
 
-	$jsonHandle = fopen( DATA_SAVE_PATH_SLASHED . 'json/' . $repoJsonFileName, 'w' );
-	fwrite( $jsonHandle, json_encode( $repoData ) );
-	fclose( $jsonHandle );
+	$jsonFile = new RawJson( $repoFileName );
+	$jsonFile->save( $repoData );
 
 	try {
 		$repoStatCsv->putClose();
