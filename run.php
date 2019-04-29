@@ -14,10 +14,13 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::create(__DIR__);
 $dotenv->load();
 
+$logger = new Logger( $now );
+
+// Default data save path with a trailing slash.
+define( 'SAVE_DATA_PATH', isset( $_ENV['SAVE_DATA_PATH'] ) ? $_ENV['SAVE_DATA_PATH'] : './' );
+
 // Date/time to use in file names.
 $now = date( 'Y-m-d\TU' );
-
-$logger = new Logger( $now );
 
 ////
 ///
@@ -74,7 +77,7 @@ foreach ( $repoNames as $repoName ) {
 
 	$fileName = str_replace( '/', '|', $repoName ) . '--' . $now . '.json';
 	$logger->log( 'Saving to ' . $fileName );
-	file_put_contents( 'json/' . $fileName, json_encode( $allRepoData[$repoName] ) );
+	file_put_contents( SAVE_DATA_PATH . 'json/' . $fileName, json_encode( $allRepoData[$repoName] ) );
 }
 $orgNames = array_unique( $orgNames );
 

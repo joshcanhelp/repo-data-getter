@@ -4,8 +4,8 @@ namespace DxSdk\Data\Api;
 
 final class GitHub extends HttpClient {
 
-	private const HEADER_TOPICS = 'application/vnd.github.mercy-preview+json';
-	private const HEADER_COMMUNITY = 'application/vnd.github.black-panther-preview+json';
+	const HEADER_TOPICS = 'application/vnd.github.mercy-preview+json';
+	const HEADER_COMMUNITY = 'application/vnd.github.black-panther-preview+json';
 
 	public function __construct( $token ) {
 		$this->baseUrl = 'https://api.github.com/repos/';

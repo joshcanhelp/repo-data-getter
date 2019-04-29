@@ -23,7 +23,7 @@ class Csv {
 			throw new \Exception( 'No file name' );
 		}
 
-		$this->saveTo = 'csv/' . $fileName . '.csv';
+		$this->saveTo = SAVE_DATA_PATH . 'csv/' . $fileName . '.csv';
 		$this->handle = fopen( $this->saveTo, 'a' );
 
 		$this->columnCount = count( $headers );
