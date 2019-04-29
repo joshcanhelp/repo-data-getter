@@ -63,7 +63,11 @@ foreach ( $repoNames as $repoName ) {
 			$dataRaw                 = $gh->$methodName( $repoName );
 			$allRepoData[$repoName][$dataType] = json_decode( $dataRaw, true );
 		} catch ( Exception $e ) {
-			$logger->log( sprintf( 'Failed getting %s data for %s: %s', $dataType, $repoName, $e->getMessage() ) );
+			// Latest release will 404 if releases are not used, no need to log.
+			if ( 404 !== $e->getCode() && 'LatestRelease' !== $dataType ) {
+				$logMsg = sprintf( 'Failed getting %s data for %s: %s', $dataType, $repoName, $e->getMessage() );
+				$logger->log( $logMsg );
+			}
 			$allRepoData[$repoName][$dataType] = [];
 		}
 	}
