@@ -17,7 +17,7 @@ class Csv {
 	 *
 	 * @throws \Exception
 	 */
-	public function __construct( string $fileName, array $headers = [] ) {
+	protected function __construct( string $fileName, array $headers = [] ) {
 
 		if ( empty( $fileName ) ) {
 			throw new \Exception( 'No file name' );
@@ -35,11 +35,11 @@ class Csv {
 	/**
 	 * @param array $row
 	 *
-	 * @return bool
+	 * @return int
 	 *
 	 * @throws \Exception
 	 */
-	public function putRow( array $row ): bool {
+	protected function putRow( array $row ): int {
 		if ( count( $row ) !== $this->columnCount ) {
 			throw new \Exception( 'Number of columns to add does not match number of headers' );
 		}
@@ -49,7 +49,7 @@ class Csv {
 	/**
 	 * @return bool
 	 */
-	public function close(): bool {
+	protected function close(): bool {
 		return fclose( $this->handle );
 	}
 }

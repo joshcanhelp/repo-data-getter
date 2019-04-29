@@ -19,7 +19,6 @@ $now = date( 'Y-m-d\TU' );
 
 $logger = new Logger( $now );
 
-
 ////
 ///
 // Get all repos from the matrix spreadsheet.
@@ -30,32 +29,13 @@ $repoCsvUrl   = 'https://docs.google.com/spreadsheets/d/e/'
                 . '2PACX-1vSpmsvxKi7yLE__SF16E3T3UEHzuLNprBDzK6nQofBDYwFMBcfv89WIX_2JLfM7EQkRjCEC7g6P8Vwd'
                 . '/pub?gid=391421749&single=true&output=csv';
 try {
-	$logger->log( 'Getting repos from Google CSV ...' );
 	$repoCsvNames = HttpClient::justGet( $repoCsvUrl );
-	$logger->log( 'Got ' . strlen( $repoCsvNames ) . ' bytes' );
 } catch ( Exception $e ) {
 	$logger->log( 'Failed getting repos from Google CSV: ' . $e->getMessage() );
 	exit;
 }
-
-
-////
-///
-// Split CSV on new lines
-// Repo name is in the first column and is the only thing we need
-//
-$repoNames = explode( PHP_EOL, $repoCsvNames );
-
-// Filter out empty rows and rows without a slash
-$repoNames = array_filter( $repoNames, function ( $el ) {
-	return ! empty( $el ) && strpos( $el, '/' );
-} );
-
-// Reduce text down to first column
-$repoNames = array_map( function ( $el ) {
-	return explode( ',', $el )[0];
-}, $repoNames );
-$logger->log( 'Have ' . count( $repoNames ) . ' repo names' );
+$repoNames = explode( PHP_EOL, $repoCsvNames ) ;
+$repoNames = Cleaner::repoNamesArray( $repoNames );
 
 
 ////
@@ -64,12 +44,14 @@ $logger->log( 'Have ' . count( $repoNames ) . ' repo names' );
 // This will be decoded to use in memory, then combined and stored as the raw JSON.
 //
 $allRepoData = [];
+$orgNames = [];
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN') );
+
 foreach ( $repoNames as $repoName ) {
-
+	$orgNames[] = Cleaner::orgName( $repoName );
 	$allRepoData[$repoName] = [];
-	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficPaths', 'TrafficViews'] as $dataType ) {
 
+	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficPaths', 'TrafficViews'] as $dataType ) {
 		// Community profiles do not exist for private repos.
 		// Skip to next data type.
 		if ( 'Community' === $dataType && $allRepoData[$repoName]['Repo']['private'] ) {
@@ -77,16 +59,12 @@ foreach ( $repoNames as $repoName ) {
 		}
 
 		try {
-			$logger->log( sprintf( 'Getting %s data for %s from GitHub ...', $dataType, $repoName ) );
-
 			$methodName              = 'get' . $dataType;
 			$dataRaw                 = $gh->$methodName( $repoName );
 			$allRepoData[$repoName][$dataType] = json_decode( $dataRaw, true );
-
-			$logger->log( sprintf( 'Getting %s data for %s from GitHub ...', strlen( $dataRaw ), $dataType, $repoName ) );
 		} catch ( Exception $e ) {
-			$logger->log( sprintf( 'Failed getting %s data for %s from GitHub: %s', $dataType, $repoName, $e->getMessage() ) );
-			$allRepoData[$repoName][$dataType] = '{}';
+			$logger->log( sprintf( 'Failed getting %s data for %s: %s', $dataType, $repoName, $e->getMessage() ) );
+			$allRepoData[$repoName][$dataType] = [];
 		}
 	}
 
@@ -94,113 +72,65 @@ foreach ( $repoNames as $repoName ) {
 	$logger->log( 'Saving to ' . $fileName );
 	file_put_contents( 'json/' . $fileName, json_encode( $allRepoData[$repoName] ) );
 }
+$orgNames = array_unique( $orgNames );
 
 
 ////
 ///
 // Iterate through the decoded data to store per-repo stats and all repo stats.
 //
+$globalStatCsv = new StatsCsv( 'global', $now );
 
-$statCsvElements = StatsCsv::ELEMENTS;
-$globalStatCsv = new StatsCsv( 'global' );
+$orgCsvs = [];
+foreach ( $orgNames as $orgName ) {
+	$orgCsvs[$orgName] = new StatsCsv( $orgName, $now );
+}
 
-$globalStats = [];
-$orgStats = [];
-foreach ( $allRepoData as $repoName => $data ) {
-
+foreach ( $allRepoData as $repoName => $repoData ) {
 	$orgName = explode( '/', $repoName )[0];
-	if ( ! isset( $orgStats[$orgName] ) ) {
-		$orgStats[$orgName] = [];
-	}
+	$repoStatCsv = new StatsCsv( str_replace( '/', '|', $repoName ), $now );
 
-	$repoStatCsv = new StatsCsv( str_replace( '/', '|', $repoName ) );
-
-	$logger->log( 'Parsing stats for ' . $repoName );
-	foreach ( $statCsvElements as $index => $stat ) {
-		$statKey = explode( '|', $stat );
+	foreach ( StatsCsv::ELEMENTS as $index => $stat ) {
+		$statKeyParts = explode( '|', $stat );
+		$dataObject = $statKeyParts[0];
+		$property = $statKeyParts[1];
 
 		// Make sure we have something to add.
-		$statValue = isset( $data[$statKey[0]][$statKey[1]] ) ? $data[$statKey[0]][$statKey[1]] : 0;
-		$statValue = Cleaner::absint( $statValue );
-
-		// Add to the global running total.
-		if ( isset( $globalStats[$index] ) ) {
-			$globalStats[$index] = 0;
+		$statValue = 0;
+		if ( isset( $repoData[$dataObject][$property] ) ) {
+			$statValue = Cleaner::absint( $repoData[$dataObject][$property] );
 		}
-		$globalStats[$index] += $statValue;
 
-		// Add to the org running total.
-		if ( ! isset( $orgStats[$orgName][$index] ) ) {
-			$orgStats[$orgName][$index] = 0;
-		}
-		$orgStats[$orgName][$index] += $statValue;
-
-		// Add to the repo stats.
-		$repoStats[$index] = $statValue;
+		$globalStatCsv->addData( $index, $statValue );
+		$orgCsvs[$orgName]->addData( $index, $statValue );
+		$repoStatCsv->addData( $index, $statValue );
 	}
-	$logger->log( 'Saving to ' . $repoCsvFileName );
-	fputcsv( $repoCsvHandle, array_merge( $statCsvElements, ['date'] ) );
-	fclose( $repoCsvHandle );
+
+	try {
+		$repoStatCsv->putClose( $now );
+	} catch ( \Exception $e ) {
+		$logger->log( 'Failed saving stats for ' . $repoName . ': ' . $e->getMessage() );
+	}
 }
 
-foreach ( $orgStats as $orgName => $orgStat ) {
-	$orgCsvFileName = 'csv/stats/' . $orgName . '.csv';
-	$orgCsvHandle   = fopen( $orgCsvFileName, 'a' );
-	if ( ! filesize( $orgCsvFileName ) ) {
-		fputcsv( $orgCsvHandle, array_merge( $statCsvElements, ['date'] ) );
+foreach ( $orgCsvs as $orgName => $orgCsv ) {
+	try {
+		$orgCsv->putClose( $now );
+	} catch ( \Exception $e ) {
+		$logger->log( 'Failed saving stats for ' . $orgName . ': ' . $e->getMessage() );
 	}
-	$logger->log( 'Saving to ' . $orgCsvFileName );
-	fputcsv( $orgCsvHandle, [$now] + $orgStat );
-	fclose( $orgCsvHandle );
 }
 
-$logger->log( 'Saving to ' . $globalCsvFileName );
-fputcsv( $globalCsvHandle, [$now] + $globalStats );
-fclose( $globalCsvHandle );
+try {
+	$globalStatCsv->putClose( $now );
+} catch ( \Exception $e ) {
+	$logger->log( 'Failed saving global stats: ' . $e->getMessage() );
+}
 
 
 ////
 ///
 // FIN!
 //
-$timeTaken = 'Done in ' . round( microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 1 ) . 's';
-$logger->log( $timeTaken );
 $logger->save();
-echo $timeTaken;
 exit;
-
-
-//
-///
-//// STORAGE
-///
-//
-
-// Sanitize repo data for CSV storage
-$repo = json_decode( $thisRepoData['repo'], true );
-$repoParsed = [
-	// Information
-	'private' => ! empty( $repo['private'] ),
-	'html_url' => empty( $repo['html_url'] ) ? '' : Cleaner::url( $repo['html_url'] ),
-	'description' => empty( $repo['description'] ) ? '' : Cleaner::text( $repo['description'] ),
-	'topics' => empty( $repo['topics'] ) ? '' : implode( ', ', Cleaner::textArray( $repo['topics'] ) ),
-	'language' => empty( $repo['language'] ) ? '' : Cleaner::text( $repo['language'] ),
-	'license' => empty( $repo['license'] ) || empty( $repo['license']['spdx_id'] ) ?
-		'Unknown' :
-		Cleaner::text( $repo['license']['spdx_id'] ),
-
-	// Stats
-	'stargazers_count' => empty( $repo['stargazers_count'] ) ? 0 : Cleaner::absint( $repo['stargazers_count'] ),
-	'subscribers_count' => empty( $repo['subscribers_count'] ) ? 0 : Cleaner::absint( $repo['subscribers_count'] ),
-	'forks' => empty( $repo['forks'] ) ? 0 : Cleaner::absint( $repo['forks'] ),
-	'open_issues_count' => empty( $repo['open_issues_count'] ) ? 0 : Cleaner::absint( $repo['open_issues_count'] ),
-	'size' => empty( $repo['size'] ) ? 0 : Cleaner::absint( $repo['size'] ),
-
-	// Dates
-	'created_at' => empty( $repo['created_at'] ) ? '' : Cleaner::date( $repo['created_at'] ),
-	'updated_at' => empty( $repo['updated_at'] ) ? '' : Cleaner::date( $repo['updated_at'] ),
-	'pushed_at' => empty( $repo['pushed_at'] ) ? '' : Cleaner::date( $repo['pushed_at'] ),
-];
-
-// TODO: Remove debugging
-echo "\n" . print_r( $repoParsed, TRUE ) . "\n";

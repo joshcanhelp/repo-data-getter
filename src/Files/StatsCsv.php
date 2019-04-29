@@ -12,46 +12,47 @@ class StatsCsv extends Csv {
 	];
 
 	private $data = [];
+	private $now = '';
 
 	/**
 	 * StatsCsv constructor.
 	 *
 	 * @param string $fileName
-	 *
-	 * @throws \Exception
-	 */
-	public function __construct( string $fileName ) {
-		$fileName = 'stats/' . $fileName;
-		$headers = array_merge( [ 'Date' ], self::ELEMENTS );
-
-		$elements = array_flip( self::ELEMENTS );
-		$this->data = array_map( function () { return 0; }, $elements );
-
-		parent::__construct( $fileName, $headers );
-	}
-
-	/**
-	 * @param string $key
-	 * @param int $val
-	 *
-	 * @throws \Exception
-	 */
-	public function addData( string $key, int $val ): void {
-		if ( ! isset( $this->data[ $key ] ) ) {
-			$this->data[ $key ] = 0;
-		}
-		$this->data[ $key ] += $val;
-	}
-
-	/**
-	 * @param array $row
 	 * @param string $now
 	 *
 	 * @throws \Exception
 	 */
-	public function putClose( array $row, string $now ): void {
-		array_unshift( $row, $now );
+	public function __construct( string $fileName, $now ) {
+		$fileName = 'stats/' . $fileName;
+		$headers = array_merge( [ 'Date' ], self::ELEMENTS );
+
+		$elements = array_keys( self::ELEMENTS );
+		$this->data = array_map( function () { return 0; }, $elements );
+
+		parent::__construct( $fileName, $headers );
+
+		$this->now = $now;
+	}
+
+	/**
+	 * @param string|int $key
+	 * @param int $val
+	 */
+	public function addData( $key, int $val ): void {
+		$this->data[ $key ] += $val;
+	}
+
+	/**
+	 * @param string $now
+	 *
+	 * @return bool
+	 *
+	 * @throws \Exception
+	 */
+	public function putClose( string $now ): bool {
+		$row = array_values( $this->data );
+		$row = array_merge( [ $now ], $row );
 		$this->putRow( $row );
-		$this->close();
+		return $this->close();
 	}
 }

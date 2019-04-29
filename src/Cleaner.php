@@ -24,6 +24,15 @@ class Cleaner {
 	}
 
 	/**
+	 * @param string $repoName
+	 *
+	 * @return string
+	 */
+	public static function orgName( string $repoName ): string  {
+		return explode( '/', $repoName )[0];
+	}
+
+	/**
 	 * @param string $datetime
 	 *
 	 * @return string
@@ -48,5 +57,34 @@ class Cleaner {
 	 */
 	public static function textArray( array $texts ): array {
 		return array_map( [ self::class, 'text' ], $texts );
+	}
+
+	/**
+	 * @param array $repoNames
+	 *
+	 * @return array
+	 */
+	public static function repoNamesArray( array $repoNames ): array {
+		$repoNames = array_map( '\DxSdk\Data\Cleaner::csvFirstCol', $repoNames );
+		$repoNames = array_filter( $repoNames, '\DxSdk\Data\Cleaner::isValidRepoName' );
+		return $repoNames;
+	}
+
+	/**
+	 * @param $el
+	 *
+	 * @return string
+	 */
+	public static function csvFirstCol( $el ): string {
+		return (string) explode( ',', $el )[0];
+	}
+
+	/**
+	 * @param $el
+	 *
+	 * @return bool
+	 */
+	public static function isValidRepoName( $el ): bool {
+		return (bool) ! empty( $el ) && strpos( $el, '/' );
 	}
 }
