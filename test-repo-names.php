@@ -2,7 +2,7 @@
 require 'vendor/autoload.php';
 
 use DxSdk\Data\Api\HttpClient;
-use DxSdk\Data\Files\StatsCsv;
+use DxSdk\Data\Files\StatsWriteCsv;
 use DxSdk\Data\Cleaner;
 
 define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/test-data/' );
@@ -34,7 +34,7 @@ echo '<pre>' . print_r( $orgCsvs, TRUE ) . '</pre>';
 //
 
 foreach( $orgCsvs as $orgName => $value ) {
-	$orgCsvs[$orgName] = new StatsCsv( $orgName );
+	$orgCsvs[$orgName] = new StatsWriteCsv( $orgName );
 }
 
 //

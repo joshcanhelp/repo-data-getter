@@ -21,6 +21,10 @@ trait Files {
 		$this->handle = $this->getHandle( $relPath, 'w' );
 	}
 
+	private function setReadHandle( string $relPath ) {
+		$this->handle = $this->getHandle( $relPath, 'r' );
+	}
+
 	private function getHandle( string $relPath, string $mode ) {
 		$this->saveTo = DATA_SAVE_PATH_SLASHED . $relPath;
 		return fopen( $this->saveTo, $mode );

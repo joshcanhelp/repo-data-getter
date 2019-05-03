@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace DxSdk\Data\Files;
 
-abstract class Csv {
+abstract class WriteCsv {
 
 	use Files;
 

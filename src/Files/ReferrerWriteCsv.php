@@ -6,7 +6,7 @@ namespace DxSdk\Data\Files;
 use DxSdk\Data\Cleaner;
 use function foo\func;
 
-class ReferrerCsv extends Csv {
+class ReferrerWriteCsv extends WriteCsv {
 
 	use Files;
 

@@ -2,12 +2,12 @@
 require 'vendor/autoload.php';
 
 use DxSdk\Data\Api\HttpClient;
-use DxSdk\Data\Files\ReferrerCsv;
+use DxSdk\Data\Files\ReferrerWriteCsv;
 use DxSdk\Data\Cleaner;
 
 define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/test-data/' );
 
-$referrers = new ReferrerCsv();
+$referrers = new ReferrerWriteCsv();
 
 $refArray = json_decode( '[
     {

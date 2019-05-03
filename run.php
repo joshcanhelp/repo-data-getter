@@ -10,8 +10,8 @@ use DxSdk\Data\Logger;
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 
-use DxSdk\Data\Files\StatsCsv;
-use DxSdk\Data\Files\ReferrerCsv;
+use DxSdk\Data\Files\StatsWriteCsv;
+use DxSdk\Data\Files\ReferrerWriteCsv;
 use DxSdk\Data\Files\RawJson;
 
 use Dotenv\Dotenv;
@@ -59,8 +59,8 @@ if ( ! empty( $argv[1] ) ) {
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN') );
 
 try {
-	$globalStatCsv = new StatsCsv( 'global' );
-	$referrerCsv = new ReferrerCsv();
+	$globalStatCsv = new StatsWriteCsv( 'global' );
+	$referrerCsv = new ReferrerWriteCsv();
 } catch ( \Exception $e ) {
 	$logger->log( 'Failed opening CSV file: ' . $e->getMessage() )->save();
 	exit;
@@ -68,13 +68,13 @@ try {
 
 $orgCsvs = array_flip( Cleaner::orgsFromRepos( $repoNames ) );
 foreach( $orgCsvs as $orgName => $value ) {
-	$orgCsvs[$orgName] = new StatsCsv( $orgName );
+	$orgCsvs[$orgName] = new StatsWriteCsv( $orgName );
 }
 
 foreach ( $repoNames as $repoName ) {
 	$orgName = Cleaner::orgName( $repoName );
 	$repoFileName = str_replace( '/', SEPARATOR, $repoName );
-	$repoStatCsv = new StatsCsv( $repoFileName );
+	$repoStatCsv = new StatsWriteCsv( $repoFileName );
 
 	$repoData = [];
 	foreach ( ['Repo', 'Community', 'LatestRelease', 'TrafficClones', 'TrafficRefs', 'TrafficViews'] as $dataType ) {
@@ -100,7 +100,7 @@ foreach ( $repoNames as $repoName ) {
 		}
 	}
 
-	foreach ( StatsCsv::ELEMENTS as $index => $stat ) {
+	foreach ( StatsWriteCsv::ELEMENTS as $index => $stat ) {
 		$statKeyParts = explode( SEPARATOR, $stat );
 		$dataObject = $statKeyParts[0];
 		$property = $statKeyParts[1];
