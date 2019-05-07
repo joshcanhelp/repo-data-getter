@@ -2,6 +2,7 @@
 
 namespace DxSdk\Data\Api;
 
+use DxSdk\Data\Cleaner;
 use \GuzzleHttp\Exception\ClientException;
 
 final class GitHub extends HttpClient {
@@ -19,13 +20,18 @@ final class GitHub extends HttpClient {
 	}
 
 	/**
+	 * Get the basic Repo data.
+	 *
+	 * @see https://developer.github.com/v3/repos/#get
+	 *
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getRepo( string $name ): string {
+	public function getRepo( string $name ): array {
 		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_TOPICS ] );
-		return $this->get( $name, $headers )->getBody()->getContents();
+		$bodyJson = $this->getContents( $name, $headers );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 
 	/**
@@ -35,12 +41,13 @@ final class GitHub extends HttpClient {
 	 *
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getCommunity( string $name ): string {
+	public function getCommunity( string $name ): array {
 		$path = $name . '/community/profile';
 		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_COMMUNITY ] );
-		return $this->get( $path, $headers )->getBody()->getContents();
+		$bodyJson = $this->getContents( $path, $headers );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 
 	/**
@@ -69,40 +76,44 @@ final class GitHub extends HttpClient {
 	/**
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getTrafficRefs( string $name ): string {
+	public function getTrafficRefs( string $name ): array {
 		$path = $name . '/traffic/popular/referrers';
-		return $this->get( $path, $this->baseHeaders )->getBody()->getContents();
+		$bodyJson = $this->getContents( $path, $this->baseHeaders );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 
 	/**
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getTrafficPaths( string $name ): string {
+	public function getTrafficPaths( string $name ): array {
 		$path = $name . '/traffic/popular/paths';
-		return $this->get( $path, $this->baseHeaders )->getBody()->getContents();
+		$bodyJson = $this->getContents( $path, $this->baseHeaders );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 
 	/**
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getTrafficViews( string $name ): string {
+	public function getTrafficViews( string $name ): array {
 		$path = $name . '/traffic/views';
-		return $this->get( $path, $this->baseHeaders )->getBody()->getContents();
+		$bodyJson = $this->getContents( $path, $this->baseHeaders );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 
 	/**
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getTrafficClones( string $name ): string {
+	public function getTrafficClones( string $name ): array {
 		$path = $name . '/traffic/clones';
-		return $this->get( $path, $this->baseHeaders )->getBody()->getContents();
+		$bodyJson = $this->getContents( $path, $this->baseHeaders );
+		return Cleaner::jsonDecode( $bodyJson );
 	}
 }

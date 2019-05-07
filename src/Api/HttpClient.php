@@ -43,8 +43,8 @@ class HttpClient {
 	}
 
 	/**
-	 * @param string $path
-	 * @param array $headers
+	 * @param string $path - Relative path from the API base URL.
+	 * @param array $headers - Headers to send, if any.
 	 *
 	 * @return ResponseInterface
 	 */
@@ -55,5 +55,15 @@ class HttpClient {
 				'headers' => $headers
 			]
 		);
+	}
+
+	/**
+	 * @param string $path - Relative path from the API base URL.
+	 * @param array $headers - Headers to send, if any.
+	 *
+	 * @return string
+	 */
+	protected function getContents( string $path, array $headers = [] ): string {
+		return $this->get( $path, $headers )->getBody()->getContents();
 	}
 }

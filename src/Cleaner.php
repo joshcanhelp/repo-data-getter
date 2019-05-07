@@ -60,11 +60,21 @@ class Cleaner {
 	}
 
 	/**
-	 * @param array $repoNames
+	 * @param string $json
 	 *
 	 * @return array
 	 */
-	public static function repoNamesArray( array $repoNames ): array {
+	public static function jsonDecode( string $json ): array {
+		return json_decode( $json, true );
+	}
+
+	/**
+	 * @param string $repoNamesCsv
+	 *
+	 * @return array
+	 */
+	public static function repoNamesArray( string $repoNamesCsv ): array {
+		$repoNames = explode( PHP_EOL, $repoNamesCsv );
 		$repoNames = array_map( '\DxSdk\Data\Cleaner::csvFirstCol', $repoNames );
 		$repoNames = array_filter( $repoNames, '\DxSdk\Data\Cleaner::isValidRepoName' );
 		return $repoNames;
