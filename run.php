@@ -57,16 +57,21 @@ if ( ! empty( $argv[1] ) ) {
 // This will be decoded to use in memory, then combined and stored as the raw JSON.
 //
 
-$globalStatCsv = new StatsWriteCsv( 'global' );
+$globalStatCsv = new StatsWriteCsv( 'stats' . SEPARATOR . 'global' );
 $referrerCsv = new ReferrerWriteCsv();
 
-$orgCsvs = array_flip( Cleaner::orgsFromRepos( $repoNames ) );
-foreach( $orgCsvs as $orgName => $value ) {
-	$orgCsvs[$orgName] = new StatsWriteCsv( $orgName );
+// Create org-level data storage.
+$orgNames = Cleaner::orgsFromRepos( $repoNames );
+$orgStatsCsvs = $orgInfoCsvs = array_flip( $orgNames );
+foreach( $orgNames as $orgName ) {
+	$orgStatsCsvs[$orgName] = new StatsWriteCsv( 'stats' . SEPARATOR . $orgName );
+	$orgInfoCsvs[$orgName]  = new InfoWriteCsv( $orgName );
 }
 
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN'), $logger );
 foreach ( $repoNames as $repoName ) {
+	$orgName = Cleaner::orgName( $repoName );
+	$repoFileName = Cleaner::repoFileName( $repoName );
 
 	$repoData = [
 		'Repo' => $gh->getRepo( $repoName ),
@@ -97,18 +102,15 @@ foreach ( $repoNames as $repoName ) {
 		$repoData['TrafficViews'] = $gh->getTrafficViews( $repoName );
 	}
 
-	try {
-		$repoInfoCsv = new InfoWriteCsv( Cleaner::repoFileName( $repoName ) );
-		$repoInfoCsv->addData( $repoData );
-		$repoInfoCsv->putClose();
-	} catch ( \Exception $e ) {
-		$logger->log( sprintf( 'Failed saving repo info CSV for %s: %s', $repoName, $e->getMessage() ) );
-	}
+	///
+	// Org-level info data
+	//
+	$orgInfoCsvs[$orgName]->addData( $repoData );
 
 	///
 	// Combined stats data
 	//
-	$repoStatCsv = new StatsWriteCsv( Cleaner::repoFileName( $repoName ) );
+	$repoStatCsv = new StatsWriteCsv( $repoFileName );
 	foreach ( StatsWriteCsv::ELEMENTS as $index => $stat ) {
 		list( $dataObject, $property ) = explode( SEPARATOR, $stat );
 
@@ -120,47 +122,29 @@ foreach ( $repoNames as $repoName ) {
 
 		$addData = [ $index, $statValue ];
 		$globalStatCsv->addData( $addData );
-		$orgCsvs[Cleaner::orgName( $repoName )]->addData( $addData );
+		$orgStatsCsvs[$orgName]->addData( $addData );
 
 		if ( $repoStatCsv instanceof StatsWriteCsv ) {
 			$repoStatCsv->addData( $addData );
 		}
 	}
+	$repoStatCsv->putClose();
 
 	if ( ! empty( $repoData['TrafficRefs'] ) ) {
 		$referrerCsv->addData( $repoData['TrafficRefs'] );
 	}
 
-	$jsonFile = new RawJson( Cleaner::repoFileName( $repoName ) );
+	$jsonFile = new RawJson( $repoFileName );
 	$jsonFile->save( $repoData );
-
-	try {
-		$repoStatCsv->putClose();
-	} catch ( \Exception $e ) {
-		$logger->log( sprintf( 'Failed saving repo stats CSV for %s: %s', $repoName, $e->getMessage() ) );
-	}
-
 }
 
-foreach ( $orgCsvs as $orgName => $orgCsv ) {
-	try {
-		$orgCsv->putClose();
-	} catch ( \Exception $e ) {
-		$logger->log( sprintf( 'Failed saving org stats CSV for %s: %s', $orgName, $e->getMessage() ) );
-	}
+foreach( $orgNames as $orgName ) {
+	$orgStatsCsvs[$orgName]->putClose();
+	$orgInfoCsvs[$orgName]->close();
 }
 
-try {
-	$globalStatCsv->putClose();
-} catch ( \Exception $e ) {
-	$logger->log( 'Failed saving global stats CSV: ' . $e->getMessage() );
-}
-
-try {
-	$referrerCsv->putClose();
-} catch ( \Exception $e ) {
-	$logger->log( 'Failed saving referrer stats: ' . $e->getMessage() );
-}
+$globalStatCsv->putClose();
+$referrerCsv->putClose();
 
 
 ////

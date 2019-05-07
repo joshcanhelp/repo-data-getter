@@ -9,7 +9,7 @@ trait Files {
 	private $handle;
 	private $saveTo;
 
-	protected function close(): bool {
+	public function close(): bool {
 		return fclose( $this->handle );
 	}
 

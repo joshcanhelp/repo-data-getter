@@ -35,13 +35,8 @@ abstract class WriteCsv {
 	 * @param array $row
 	 *
 	 * @return int
-	 *
-	 * @throws \Exception
 	 */
 	protected function putRow( array $row ): int {
-		if ( count( $row ) !== $this->columnCount ) {
-			throw new \Exception( 'Number of columns to add does not match number of headers' );
-		}
 		return $this->putCsv( $row );
 	}
 
@@ -51,9 +46,4 @@ abstract class WriteCsv {
 	 * @return mixed
 	 */
 	abstract public function addData( array $data );
-
-	/**
-	 * @return bool
-	 */
-	abstract public function putClose(): bool;
 }

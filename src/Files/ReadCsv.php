@@ -11,18 +11,14 @@ class ReadCsv {
 	 * Csv constructor.
 	 *
 	 * @param string $fileName
-	 *
-	 * @throws \Exception
 	 */
 	public function __construct( string $fileName ) {
-
-		if ( empty( $fileName ) ) {
-			throw new \Exception( 'No file name' );
-		}
-
-		$this->setReadHandle( 'csv/' . $fileName . '.csv' );
+		$this->setReadHandle( sprintf( WriteCsv::FILEPATH, $fileName ) );
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getPreviousStats(): array {
 		$csvArray = [];
 		while ( $csvLine = fgetcsv( $this->handle ) ) {

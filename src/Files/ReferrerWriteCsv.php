@@ -18,8 +18,8 @@ class ReferrerWriteCsv extends WriteCsv {
 	 * @throws \Exception
 	 */
 	public function __construct() {
-		$fileName = 'all-referrers';
-		$this->setWriteHandle( 'csv/' . $fileName . '.csv' );
+		$fileName = 'stats' . SEPARATOR . 'referrers';
+		$this->setWriteHandle( sprintf( self::FILEPATH, $fileName ) );
 		$headers = [ 'Referrer', 'Count', 'Uniques' ];
 		parent::__construct( $fileName, $headers );
 	}
@@ -44,8 +44,6 @@ class ReferrerWriteCsv extends WriteCsv {
 
 	/**
 	 * @return bool
-	 *
-	 * @throws \Exception
 	 */
 	public function putClose(): bool {
 		$rows = $this->data;

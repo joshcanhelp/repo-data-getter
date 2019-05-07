@@ -41,8 +41,6 @@ class StatsWriteCsv extends WriteCsv {
 
 	/**
 	 * @return bool
-	 *
-	 * @throws \Exception
 	 */
 	public function putClose(): bool {
 		$row = array_values( $this->data );
