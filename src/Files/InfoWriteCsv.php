@@ -9,7 +9,7 @@ class InfoWriteCsv extends WriteCsv {
 		'Repo' . SEPARATOR . 'description',
 		'Repo' . SEPARATOR . 'homepage',
 		'Repo' . SEPARATOR . 'topics',
-		'Repo' . SEPARATOR . 'license',
+		'Repo' . SEPARATOR . 'license' . SEPARATOR . 'spdx_id',
 		'Repo' . SEPARATOR . 'language',
 		'Repo' . SEPARATOR . 'size',
 		'Repo' . SEPARATOR . 'pushed_at',
@@ -17,7 +17,8 @@ class InfoWriteCsv extends WriteCsv {
 		'Repo' . SEPARATOR . 'private',
 		'Repo' . SEPARATOR . 'html_url',
 		'Community' . SEPARATOR . 'health_percentage',
-		'Release' . SEPARATOR . 'name',
+		'LatestRelease' . SEPARATOR . 'name',
+		'LatestRelease' . SEPARATOR . 'published_at',
 		'Coverage',
 		'CI',
 	];
@@ -36,18 +37,22 @@ class InfoWriteCsv extends WriteCsv {
 		// Make sure we don't have any duplicates.
 		$headers  = array_unique( self::ELEMENTS );
 
-		// Make the elements into an assoc array set to blank values to store the data.
+		// Make the elements into an assoc array.
 		$elements = array_flip( $headers );
+
+		// Set default data to blank values.
 		$this->data = array_map( function () { return ''; }, $elements );
 
-		parent::__construct( $fileName, $headers );
+		parent::__construct( $fileName . SEPARATOR . 'info', $headers );
 	}
 
 	/**
 	 * @param array $addData
 	 */
 	public function addData( array $addData ) {
-		$this->data[$addData[0]] += $addData[1];
+		if ( isset( $this->data[$addData[0]] ) ) {
+			$this->data[$addData[0]] = $addData[1];
+		}
 	}
 
 	/**
@@ -57,10 +62,6 @@ class InfoWriteCsv extends WriteCsv {
 	 */
 	public function putClose(): bool {
 		$row = array_values( $this->data );
-		$date = explode( '_', DATE_NOW )[0];
-		$time = explode( '_', DATE_NOW )[1];
-		$time = str_replace( '-', ':', $time );
-		$row = array_merge( [ $date . SEPARATOR . $time, TIME_NOW ], $row );
 		$this->putRow( $row );
 		return $this->close();
 	}

@@ -11,7 +11,7 @@ $repoCsvUrl   = 'https://docs.google.com/spreadsheets/d/e/'
                 . '2PACX-1vSpmsvxKi7yLE__SF16E3T3UEHzuLNprBDzK6nQofBDYwFMBcfv89WIX_2JLfM7EQkRjCEC7g6P8Vwd'
                 . '/pub?gid=391421749&single=true&output=csv';
 
-$repoCsvNames = HttpClient::justGet( $repoCsvUrl );
+$repoCsvNames = HttpClient::getUrlAsString( $repoCsvUrl );
 $repoNames = explode( PHP_EOL, $repoCsvNames ) ;
 $repoNames = Cleaner::repoNamesArray( $repoNames );
 

@@ -6,7 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 
 use League\Uri\Exception;
 
@@ -33,16 +32,33 @@ class HttpClient {
 	}
 
 	/**
-	 * @param $url
+	 * @param string $url
 	 *
 	 * @return string
 	 */
-	public static function justGet( string $url ): string {
+	public static function getUrlAsString( string $url ): string {
 		$client = new Client( [ 'timeout'  => self::DEFAULT_TIMEOUT ] );
 		return $client->send( new Request( 'GET', $url ) )->getBody()->getContents();
 	}
 
 	/**
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	public static function fileExists( string $url ): bool {
+		$client = new Client( [ 'timeout'  => self::DEFAULT_TIMEOUT ] );
+		try {
+			$client->send( new Request( 'GET', $url ) );
+			return true;
+		} catch ( \Exception $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Make a GET call.
+	 *
 	 * @param string $path - Relative path from the API base URL.
 	 * @param array $headers - Headers to send, if any.
 	 *
@@ -58,6 +74,8 @@ class HttpClient {
 	}
 
 	/**
+	 * Get the body contents as a string.
+	 *
 	 * @param string $path - Relative path from the API base URL.
 	 * @param array $headers - Headers to send, if any.
 	 *

@@ -69,6 +69,15 @@ class Cleaner {
 	}
 
 	/**
+	 * @param string $repoName
+	 *
+	 * @return string
+	 */
+	public static function repoFileName( string $repoName ): string {
+		return str_replace( '/', SEPARATOR, $repoName );
+	}
+
+	/**
 	 * @param string $repoNamesCsv
 	 *
 	 * @return array
