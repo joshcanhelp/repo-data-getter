@@ -3,19 +3,27 @@
 namespace DxSdk\Data\Api;
 
 use DxSdk\Data\Cleaner;
-use \GuzzleHttp\Exception\ClientException;
+use DxSdk\Data\Logger;
+use GuzzleHttp\Exception\ClientException;
 
 final class GitHub extends HttpClient {
 
 	const HEADER_TOPICS = 'application/vnd.github.mercy-preview+json';
 	const HEADER_COMMUNITY = 'application/vnd.github.black-panther-preview+json';
+	const FAILED_LOG = 'Failed getting %s data for %s: %s';
 
-	public function __construct( $token ) {
+	/**
+	 * @var Logger
+	 */
+	private $logger;
+
+	public function __construct( $token, Logger $logger ) {
 		$this->baseUrl = 'https://api.github.com/repos/';
 		$this->baseHeaders = [
 			'Accept' => 'application/vnd.github.v3+json',
 			'Authorization' => 'token ' . $token,
 		];
+		$this->logger = $logger;
 		parent::__construct();
 	}
 
@@ -30,8 +38,15 @@ final class GitHub extends HttpClient {
 	 */
 	public function getRepo( string $name ): array {
 		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_TOPICS ] );
-		$bodyJson = $this->getContents( $name, $headers );
-		return Cleaner::jsonDecode( $bodyJson );
+
+		try {
+			$responseJson =  $this->getContents( $name, $headers );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Repo data for %s: %s', $name, $e->getMessage() ) );
+			$responseJson = '{}';
+		}
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 
 	/**
@@ -46,8 +61,15 @@ final class GitHub extends HttpClient {
 	public function getCommunity( string $name ): array {
 		$path = $name . '/community/profile';
 		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_COMMUNITY ] );
-		$bodyJson = $this->getContents( $path, $headers );
-		return Cleaner::jsonDecode( $bodyJson );
+
+		try {
+			$responseJson = $this->getContents( $path, $headers );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Community data for %s: %s', $name, $e->getMessage() ) );
+			$responseJson = '{}';
+		}
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 
 	/**
@@ -57,20 +79,22 @@ final class GitHub extends HttpClient {
 	 *
 	 * @param string $name - Full repo name including org, like "org/repo".
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getLatestRelease( string $name ): string {
+	public function getLatestRelease( string $name ): array {
 		$path = $name . '/releases/latest';
+
 		try {
-			$response = $this->get( $path, $this->baseHeaders );
+			$responseJson = $this->getContents( $path, $this->baseHeaders );
 		} catch ( ClientException $e ) {
 			// 404 errors for the latest release endpoint means that releases are not used for this repo.
-			if ( 404 === $e->getCode() ) {
-				return '{}';
+			if ( 404 !== $e->getCode() ) {
+				$this->logger->log( sprintf( 'Failed getting Release data for %s: %s', $name, $e->getMessage() ) );
 			}
-			throw $e;
+			$responseJson = '{}';
 		}
-		return $response->getBody()->getContents();
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 
 	/**
@@ -80,19 +104,15 @@ final class GitHub extends HttpClient {
 	 */
 	public function getTrafficRefs( string $name ): array {
 		$path = $name . '/traffic/popular/referrers';
-		$bodyJson = $this->getContents( $path, $this->baseHeaders );
-		return Cleaner::jsonDecode( $bodyJson );
-	}
 
-	/**
-	 * @param string $name - Full repo name including org, like "org/repo".
-	 *
-	 * @return array
-	 */
-	public function getTrafficPaths( string $name ): array {
-		$path = $name . '/traffic/popular/paths';
-		$bodyJson = $this->getContents( $path, $this->baseHeaders );
-		return Cleaner::jsonDecode( $bodyJson );
+		try {
+			$responseJson = $this->getContents( $path, $this->baseHeaders );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Referrers data for %s: %s', $name, $e->getMessage() ) );
+			$responseJson = '{}';
+		}
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 
 	/**
@@ -102,8 +122,15 @@ final class GitHub extends HttpClient {
 	 */
 	public function getTrafficViews( string $name ): array {
 		$path = $name . '/traffic/views';
-		$bodyJson = $this->getContents( $path, $this->baseHeaders );
-		return Cleaner::jsonDecode( $bodyJson );
+
+		try {
+			$responseJson = $this->getContents( $path, $this->baseHeaders );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Referrers data for %s: %s', $name, $e->getMessage() ) );
+			$responseJson = '{}';
+		}
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 
 	/**
@@ -113,7 +140,14 @@ final class GitHub extends HttpClient {
 	 */
 	public function getTrafficClones( string $name ): array {
 		$path = $name . '/traffic/clones';
-		$bodyJson = $this->getContents( $path, $this->baseHeaders );
-		return Cleaner::jsonDecode( $bodyJson );
+
+		try {
+			$responseJson = $this->getContents( $path, $this->baseHeaders );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Clones data for %s: %s', $name, $e->getMessage() ) );
+			$responseJson = '{}';
+		}
+
+		return Cleaner::jsonDecode( $responseJson );
 	}
 }

@@ -7,6 +7,8 @@ abstract class WriteCsv {
 
 	use Files;
 
+	const FILEPATH = 'csv/%s.csv';
+
 	protected $columnCount;
 
 	/**
@@ -19,12 +21,8 @@ abstract class WriteCsv {
 	 */
 	protected function __construct( string $fileName, array $headers = [] ) {
 
-		if ( empty( $fileName ) ) {
-			throw new \Exception( 'No file name' );
-		}
-
 		if ( ! $this->handle ) {
-			$this->setAppendHandle( 'csv/' . $fileName . '.csv' );
+			$this->setAppendHandle( sprintf( self::FILEPATH, $fileName ) );
 		}
 
 		$this->columnCount = count( $headers );

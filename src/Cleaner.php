@@ -6,21 +6,22 @@ namespace DxSdk\Data;
 class Cleaner {
 
 	/**
-	 * @param string $text
+	 * @param string|null $text
 	 *
 	 * @return string
 	 */
-	public static function text( string $text ): string {
-		return htmlspecialchars( $text );
+	public static function text( $text ): string {
+		return htmlspecialchars( (string) $text );
 	}
 
 	/**
-	 * @param string $text
+	 * @param string|null $text
 	 *
 	 * @return string
 	 */
-	public static function url( string $text ): string  {
-		return (string) filter_var( $text, FILTER_SANITIZE_URL );
+	public static function url( $text ): string  {
+		$text = (string) $text;
+		return filter_var( $text, FILTER_SANITIZE_URL );
 	}
 
 	/**
@@ -60,6 +61,16 @@ class Cleaner {
 	}
 
 	/**
+	 * @param array $texts
+	 *
+	 * @return string
+	 */
+	public static function commaSeparateArray( array $texts ): string {
+		$texts = implode( ', ', $texts );
+		return self::text( $texts );
+	}
+
+	/**
 	 * @param string $json
 	 *
 	 * @return array
@@ -84,9 +95,9 @@ class Cleaner {
 	 */
 	public static function repoNamesArray( string $repoNamesCsv ): array {
 		$repoNames = explode( PHP_EOL, $repoNamesCsv );
-		$repoNames = array_map( '\DxSdk\Data\Cleaner::csvFirstCol', $repoNames );
-		$repoNames = array_filter( $repoNames, '\DxSdk\Data\Cleaner::isValidRepoName' );
-		return $repoNames;
+		$repoNames = array_map( [ self::class, 'csvFirstCol' ], $repoNames );
+		$repoNames = array_filter( $repoNames, [ self::class, 'isValidRepoName' ] );
+		return array_unique( $repoNames );
 	}
 
 	/**

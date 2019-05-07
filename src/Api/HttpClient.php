@@ -7,8 +7,6 @@ use GuzzleHttp\Psr7\Request;
 
 use Psr\Http\Message\ResponseInterface;
 
-use League\Uri\Exception;
-
 class HttpClient {
 
 	const DEFAULT_TIMEOUT = 10;
@@ -20,10 +18,6 @@ class HttpClient {
 	private $client;
 
 	public function __construct() {
-
-		if ( ! $this->baseUrl ) {
-			throw new Exception( 'No API base URL!' );
-		}
 
 		$this->client = new Client( [
 			'base_uri' => $this->baseUrl,

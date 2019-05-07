@@ -12,8 +12,7 @@ $repoCsvUrl   = 'https://docs.google.com/spreadsheets/d/e/'
                 . '/pub?gid=391421749&single=true&output=csv';
 
 $repoCsvNames = HttpClient::getUrlAsString( $repoCsvUrl );
-$repoNames = explode( PHP_EOL, $repoCsvNames ) ;
-$repoNames = Cleaner::repoNamesArray( $repoNames );
+$repoNames = Cleaner::repoNamesArray( $repoCsvNames );
 
 //
 ///
@@ -22,6 +21,8 @@ echo '<pre>' . print_r( $repoNames, TRUE ) . '</pre>';
 ////
 ///
 //
+
+die();
 
 $orgCsvs = array_flip( Cleaner::orgsFromRepos( $repoNames ) );
 
