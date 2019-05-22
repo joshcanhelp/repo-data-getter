@@ -34,9 +34,7 @@ $logger = new Logger();
 // All repos are stored in the "All Repos" sheet and updated with every sheet update.
 // That sheet is published as CSV from File > Publish to Web
 //
-$repoCsvUrl   = 'https://docs.google.com/spreadsheets/d/e/'
-                . '2PACX-1vSpmsvxKi7yLE__SF16E3T3UEHzuLNprBDzK6nQofBDYwFMBcfv89WIX_2JLfM7EQkRjCEC7g6P8Vwd'
-                . '/pub?gid=391421749&single=true&output=csv';
+$repoCsvUrl = getenv('REPO_CSV_URL');
 try {
 	$repoCsvNames = HttpClient::getUrlAsString( $repoCsvUrl );
 	$repoNames = Cleaner::repoNamesArray( $repoCsvNames );
@@ -44,12 +42,6 @@ try {
 	$logger->log( 'Failed getting repos from Google CSV: ' . $e->getMessage() )->save();
 	exit;
 }
-
-// Limit number of repos to process for testing.
-if ( ! empty( $argv[1] ) ) {
-	$repoNames = array_slice( $repoNames, 0, Cleaner::absint( $argv[1] ) );
-}
-
 
 ////
 ///
