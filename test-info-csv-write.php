@@ -1,7 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 
-use DxSdk\Data\Files\InfoWriteCsv;
+use DxSdk\Data\Files\WriteInfoCsv;
 
 // Date/time to use in file names.
 define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
@@ -9,7 +9,7 @@ define( 'SEPARATOR', '--' );
 define( 'DATE_NOW', date( 'Y-m-d_H-i-s' ) );
 define( 'TIME_NOW', date( 'U' ) );
 
-$infoWriteCsv = new InfoWriteCsv('banana');
+$infoWriteCsv = new WriteInfoCsv('banana');
 $infoWriteCsv->addData( [
 	'Repo' => [
 		'name' => uniqid(),

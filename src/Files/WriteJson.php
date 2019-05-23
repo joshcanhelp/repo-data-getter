@@ -2,12 +2,14 @@
 
 namespace DxSdk\Data\Files;
 
-class RawJson {
+class WriteJson {
 
 	use Files;
 
+	const FILEPATH = 'json/%s.json';
+
 	public function __construct( string $fileName ) {
-		$this->setWriteHandle( 'json/'. $fileName . SEPARATOR . DATE_NOW . '.json' );
+		$this->setWriteHandle( sprintf( self::FILEPATH, $fileName . SEPARATOR . DATE_NOW ) );
 	}
 
 	/**

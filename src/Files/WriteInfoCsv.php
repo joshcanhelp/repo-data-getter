@@ -4,8 +4,9 @@ declare(strict_types=1);
 namespace DxSdk\Data\Files;
 
 use DxSdk\Data\Cleaner;
+use DxSdk\Data\Files\ReadCsv;
 
-class InfoWriteCsv extends WriteCsv {
+class WriteInfoCsv extends WriteCsv {
 
 	use Files;
 
@@ -31,18 +32,19 @@ class InfoWriteCsv extends WriteCsv {
 	/**
 	 * InfoWriteCsv constructor.
 	 *
-	 * @param string $fileName
+	 * @param string $orgName
 	 *
 	 * @throws \Exception
 	 */
-	public function __construct( string $fileName ) {
+	public function __construct( string $orgName ) {
 
 		// Make sure we don't have any duplicates.
 		$headers  = array_keys( self::ELEMENTS );
 		$headers  = array_unique( $headers );
 
-		$fileName = 'info' . SEPARATOR . $fileName;
+		$fileName = 'info' . SEPARATOR . $orgName;
 		$this->setWriteHandle( sprintf( self::FILEPATH, $fileName ) );
+
 		parent::__construct( $fileName, $headers );
 	}
 
@@ -61,19 +63,21 @@ class InfoWriteCsv extends WriteCsv {
 				continue;
 			}
 
+			$dataObject = $addData[ $infoNameParts[0] ];
+
 			// No child property to get.
 			if ( empty( $infoNameParts[1] ) ) {
-				$rowData[] = Cleaner::$sanitizeFunc( $addData[$infoNameParts[0]] );
+				$rowData[] = Cleaner::$sanitizeFunc( $dataObject );
 				continue;
 			}
 
 			// No grandchild property to get.
 			if ( empty( $infoNameParts[2] ) ) {
-				$rowData[] = Cleaner::$sanitizeFunc( $addData[$infoNameParts[0]][$infoNameParts[1]] );
+				$rowData[] = Cleaner::$sanitizeFunc( $dataObject[$infoNameParts[1]] );
 				continue;
 			}
 
-			$rowData[] = Cleaner::$sanitizeFunc( $addData[$infoNameParts[0]][$infoNameParts[1]][$infoNameParts[2]] );
+			$rowData[] = Cleaner::$sanitizeFunc( $dataObject[$infoNameParts[1]][$infoNameParts[2]] );
 		}
 
 		$this->putRow( $rowData );

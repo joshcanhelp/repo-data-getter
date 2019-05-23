@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace DxSdk\Data\Files;
 
-class StatsWriteCsv extends WriteCsv {
+class WriteStatsCsv extends WriteCsv {
 
 	const ELEMENTS = [
 		'Repo' . SEPARATOR . 'stargazers_count',

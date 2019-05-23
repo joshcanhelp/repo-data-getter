@@ -10,10 +10,10 @@ use DxSdk\Data\Logger;
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 
-use DxSdk\Data\Files\StatsWriteCsv;
-use DxSdk\Data\Files\InfoWriteCsv;
-use DxSdk\Data\Files\ReferrerWriteCsv;
-use DxSdk\Data\Files\RawJson;
+use DxSdk\Data\Files\WriteStatsCsv;
+use DxSdk\Data\Files\WriteInfoCsv;
+use DxSdk\Data\Files\WriteReferrerCsv;
+use DxSdk\Data\Files\WriteJson;
 
 use Dotenv\Dotenv;
 
@@ -49,15 +49,15 @@ try {
 // This will be decoded to use in memory, then combined and stored as the raw JSON.
 //
 
-$globalStatCsv = new StatsWriteCsv( 'stats' . SEPARATOR . 'global' );
-$referrerCsv = new ReferrerWriteCsv();
+$globalStatCsv = new WriteStatsCsv( 'stats' . SEPARATOR . 'global' );
+$referrerCsv = new WriteReferrerCsv();
 
 // Create org-level data storage.
 $orgNames = Cleaner::orgsFromRepos( $repoNames );
 $orgStatsCsvs = $orgInfoCsvs = array_flip( $orgNames );
 foreach( $orgNames as $orgName ) {
-	$orgStatsCsvs[$orgName] = new StatsWriteCsv( 'stats' . SEPARATOR . $orgName );
-	$orgInfoCsvs[$orgName]  = new InfoWriteCsv( $orgName );
+	$orgStatsCsvs[$orgName] = new WriteStatsCsv( 'stats' . SEPARATOR . $orgName );
+	$orgInfoCsvs[$orgName]  = new WriteInfoCsv( $orgName );
 }
 
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN'), $logger );
@@ -97,13 +97,13 @@ foreach ( $repoNames as $repoName ) {
 	///
 	// Org-level info data
 	//
-	$orgInfoCsvs[$orgName]->addData( $repoData );
+	$orgInfoCsvs[$orgName]->addData( $repoName, $repoData );
 
 	///
 	// Combined stats data
 	//
-	$repoStatCsv = new StatsWriteCsv( $repoFileName );
-	foreach ( StatsWriteCsv::ELEMENTS as $index => $stat ) {
+	$repoStatCsv = new WriteStatsCsv( $repoFileName );
+	foreach ( WriteStatsCsv::ELEMENTS as $index => $stat ) {
 		list( $dataObject, $property ) = explode( SEPARATOR, $stat );
 
 		// Make sure we have a value to add.
@@ -116,7 +116,7 @@ foreach ( $repoNames as $repoName ) {
 		$globalStatCsv->addData( $addData );
 		$orgStatsCsvs[$orgName]->addData( $addData );
 
-		if ( $repoStatCsv instanceof StatsWriteCsv ) {
+		if ( $repoStatCsv instanceof WriteStatsCsv ) {
 			$repoStatCsv->addData( $addData );
 		}
 	}
@@ -126,7 +126,7 @@ foreach ( $repoNames as $repoName ) {
 		$referrerCsv->addData( $repoData['TrafficRefs'] );
 	}
 
-	$jsonFile = new RawJson( $repoFileName );
+	$jsonFile = new WriteJson( $repoFileName );
 	$jsonFile->save( $repoData );
 }
 

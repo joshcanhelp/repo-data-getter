@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace DxSdk\Data\Files;
 
 use DxSdk\Data\Cleaner;
-use function foo\func;
 
-class ReferrerWriteCsv extends WriteCsv {
+class WriteReferrerCsv extends WriteCsv {
 
 	use Files;
 
