@@ -5,7 +5,7 @@ namespace DxSdk\Data\Api;
 use DxSdk\Data\Cleaner;
 use DxSdk\Data\Files\ReadJson;
 use DxSdk\Data\Logger;
-use DxSdk\Data\Files\ReadCsv;
+
 use GuzzleHttp\Exception\ClientException;
 
 final class GitHub extends HttpClient {
@@ -25,7 +25,7 @@ final class GitHub extends HttpClient {
 	private $cache = [];
 
 	public function __construct( $token, Logger $logger ) {
-		$this->baseUrl = 'https://api.github.com/repos/';
+		$this->baseUrl = defined( 'GITHUB_BASE_API' ) ? GITHUB_BASE_API : 'https://api.github.com/repos/';
 		$this->baseHeaders = [
 			'Accept' => 'application/vnd.github.v3+json',
 			'Authorization' => 'token ' . $token,
