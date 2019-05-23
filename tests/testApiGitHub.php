@@ -27,12 +27,8 @@ class TestApiGitHub extends \PHPUnit\Framework\TestCase {
 		$this->assertFalse( file_exists( self::TEST_JSON_FILE ) );
 	}
 
-	/**
-	 * @runInSeparateProcess
-	 */
 	public function testThatRepoApiErrorFallsBackToPreviousJson() {
-		define( 'GITHUB_BASE_API', uniqid() );
-		$gitHub = new GitHub( uniqid(), $this->logger );
+		$gitHub = new GitHub( uniqid(), $this->logger, [ 'baseUrl' => uniqid() ] );
 
 		$response = $gitHub->getRepo( 'org-name/repo-name' );
 
@@ -47,12 +43,8 @@ class TestApiGitHub extends \PHPUnit\Framework\TestCase {
 		}
 	}
 
-	/**
-	 * @runInSeparateProcess
-	 */
 	public function testThatCommunityApiErrorFallsBackToPreviousJson() {
-		define( 'GITHUB_BASE_API', uniqid() );
-		$gitHub = new GitHub( uniqid(), $this->logger );
+		$gitHub = new GitHub( uniqid(), $this->logger, [ 'baseUrl' => uniqid() ] );
 
 		$response = $gitHub->getCommunity( 'org-name/repo-name' );
 
@@ -67,12 +59,8 @@ class TestApiGitHub extends \PHPUnit\Framework\TestCase {
 		}
 	}
 
-	/**
-	 * @runInSeparateProcess
-	 */
 	public function testThatLatestReleaseApiErrorFallsBackToPreviousJson() {
-		define( 'GITHUB_BASE_API', uniqid() );
-		$gitHub = new GitHub( uniqid(), $this->logger );
+		$gitHub = new GitHub( uniqid(), $this->logger, [ 'baseUrl' => uniqid() ] );
 
 		$response = $gitHub->getLatestRelease( 'org-name/repo-name' );
 
@@ -87,12 +75,8 @@ class TestApiGitHub extends \PHPUnit\Framework\TestCase {
 		}
 	}
 
-	/**
-	 * @runInSeparateProcess
-	 */
 	public function testThatTrafficViewsApiErrorFallsBackToPreviousJson() {
-		define( 'GITHUB_BASE_API', uniqid() );
-		$gitHub = new GitHub( uniqid(), $this->logger );
+		$gitHub = new GitHub( uniqid(), $this->logger, [ 'baseUrl' => uniqid() ] );
 
 		$response = $gitHub->getTrafficViews( 'org-name/repo-name' );
 
@@ -107,12 +91,8 @@ class TestApiGitHub extends \PHPUnit\Framework\TestCase {
 		}
 	}
 
-	/**
-	 * @runInSeparateProcess
-	 */
 	public function testThatTrafficClonesApiErrorFallsBackToPreviousJson() {
-		define( 'GITHUB_BASE_API', uniqid() );
-		$gitHub = new GitHub( uniqid(), $this->logger );
+		$gitHub = new GitHub( uniqid(), $this->logger, [ 'baseUrl' => uniqid() ] );
 
 		$response = $gitHub->getTrafficClones( 'org-name/repo-name' );
 

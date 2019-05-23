@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class HttpClient {
 
-	const DEFAULT_TIMEOUT = 10;
+	const DEFAULT_TIMEOUT = 20;
 
 	protected $token;
 	protected $baseUrl;
@@ -17,12 +17,13 @@ class HttpClient {
 
 	private $client;
 
-	public function __construct() {
-
-		$this->client = new Client( [
-			'base_uri' => $this->baseUrl,
-			'timeout'  => self::DEFAULT_TIMEOUT,
-		] );
+	/**
+	 * HttpClient constructor.
+	 *
+	 * @param array $opts - Guzzle options.
+	 */
+	public function __construct( array $opts ) {
+		$this->client = new Client( $opts );
 	}
 
 	/**

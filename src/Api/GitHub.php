@@ -24,14 +24,23 @@ final class GitHub extends HttpClient {
 	 */
 	private $cache = [];
 
-	public function __construct( $token, Logger $logger ) {
-		$this->baseUrl = defined( 'GITHUB_BASE_API' ) ? GITHUB_BASE_API : 'https://api.github.com/repos/';
+	public function __construct( string $token, Logger $logger, array $opts = [] ) {
+
 		$this->baseHeaders = [
 			'Accept' => 'application/vnd.github.v3+json',
 			'Authorization' => 'token ' . $token,
 		];
+
 		$this->logger = $logger;
-		parent::__construct();
+
+		if ( empty( $opts ) ) {
+			$opts = [
+				'base_uri' => 'https://api.github.com/repos/',
+				'timeout'  => self::DEFAULT_TIMEOUT,
+			];
+		}
+
+		parent::__construct( $opts );
 	}
 
 	/**
