@@ -92,7 +92,7 @@ final class GitHub extends HttpClient {
 		try {
 			$responseJson = $this->getContents( $path, $this->baseHeaders );
 			return Cleaner::jsonDecode( $responseJson );
-		} catch ( ClientException $e ) {
+		} catch ( \Exception $e ) {
 			// 404 errors for the latest release endpoint means that releases are not used for this repo.
 			if ( 404 !== $e->getCode() ) {
 				$this->logger->log( sprintf( 'Failed getting LatestRelease data for %s: %s', $name, $e->getMessage() ) );

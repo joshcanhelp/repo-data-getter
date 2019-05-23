@@ -97,7 +97,7 @@ foreach ( $repoNames as $repoName ) {
 	///
 	// Org-level info data
 	//
-	$orgInfoCsvs[$orgName]->addData( $repoName, $repoData );
+	$orgInfoCsvs[$orgName]->addData( $repoData );
 
 	///
 	// Combined stats data
