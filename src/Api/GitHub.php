@@ -149,7 +149,6 @@ final class GitHub extends HttpClient {
 			return Cleaner::jsonDecode( $responseJson );
 		} catch ( \Exception $e ) {
 			$this->logger->log( sprintf( 'Failed getting TrafficClones data for %s: %s', $name, $e->getMessage() ) );
-			$readCsv = new ReadCsv( $name );
 			return $this->getPrevious( $name, 'TrafficClones' );
 		}
 	}

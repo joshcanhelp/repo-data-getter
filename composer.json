@@ -18,6 +18,11 @@
     "require-dev": {
         "phpunit/phpunit" : "^7.0"
     },
+    "scripts": {
+        "phpcs": "\"vendor/bin/phpcs\"",
+        "phpcbf": "\"vendor/bin/phpcbf\"",
+        "test": "\"vendor/bin/phpunit\" --coverage-text"
+    },
     "autoload": {
         "psr-4": {
             "DxSdk\\Data\\": "src/"
