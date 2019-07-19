@@ -96,6 +96,7 @@ class Cleaner {
 	public static function repoNamesArray( string $repoNamesCsv ): array {
 		$repoNames = explode( PHP_EOL, $repoNamesCsv );
 		$repoNames = array_map( [ self::class, 'csvFirstCol' ], $repoNames );
+		$repoNames = array_map( 'trim', $repoNames );
 		$repoNames = array_filter( $repoNames, [ self::class, 'isValidRepoName' ] );
 		return array_unique( $repoNames );
 	}

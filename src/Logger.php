@@ -32,12 +32,10 @@ class Logger {
 	 * @return bool
 	 */
 	public function save(): bool {
+		echo $this->out();
 		if ( isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ) {
 			$this->log( 'Done in ' . round( microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 1 ) . 's' );
 		}
-
-		$logOutput = $this->out();
-		echo $logOutput;
-		return $this->writeToFile( 'logs/' . DATE_NOW . '.txt', $logOutput );
+		return $this->writeToFile( 'logs/' . DATE_NOW . '.txt', $this->out() );
 	}
 }
