@@ -26,7 +26,7 @@ class WriteInfoCsv extends WriteCsv {
 		'LatestRelease' . SEPARATOR . 'name' => 'text',
 		'LatestRelease' . SEPARATOR . 'published_at' => 'date',
 		'CI' => 'text',
-		//'Coverage',
+		'CodeCov' . SEPARATOR . 'c' => 'absint',
 	];
 
 	/**

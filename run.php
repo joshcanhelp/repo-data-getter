@@ -9,6 +9,7 @@ use DxSdk\Data\Logger;
 
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
+use DxSdk\Data\Api\CodeCov;
 
 use DxSdk\Data\Files\WriteStatsCsv;
 use DxSdk\Data\Files\WriteInfoCsv;
@@ -61,6 +62,7 @@ foreach( $orgNames as $orgName ) {
 }
 
 $gh = new GitHub( getenv('GITHUB_READ_TOKEN'), $logger );
+$cc = new CodeCov( getenv('CODECOV_READ_TOKEN'), $logger );
 foreach ( $repoNames as $repoName ) {
 	$orgName = Cleaner::orgName( $repoName );
 	$repoFileName = Cleaner::repoFileName( $repoName );
@@ -85,6 +87,8 @@ foreach ( $repoNames as $repoName ) {
 		} elseif ( HttpClient::fileExists( $travisCiConfig ) ) {
 			$repoData['CI'] = 'Travis';
 		}
+
+		$repoData['CodeCov'] = $cc->getCoverage( $repoName );
 	}
 
 	// No traffic data if GitHub token cannot push; no traffic counted if private.

@@ -6,10 +6,9 @@ use DxSdk\Data\Cleaner;
 use DxSdk\Data\Files\ReadJson;
 use DxSdk\Data\Logger;
 
-use GuzzleHttp\Exception\ClientException;
-
 final class GitHub extends HttpClient {
 
+	const HEADER_DEFAULT = 'application/vnd.github.v3+json';
 	const HEADER_TOPICS = 'application/vnd.github.mercy-preview+json';
 	const HEADER_COMMUNITY = 'application/vnd.github.black-panther-preview+json';
 	const FAILED_LOG = 'Failed getting %s data for %s: %s';
@@ -27,7 +26,7 @@ final class GitHub extends HttpClient {
 	public function __construct( string $token, Logger $logger, array $opts = [] ) {
 
 		$this->baseHeaders = [
-			'Accept' => 'application/vnd.github.v3+json',
+			'Accept' => self::HEADER_DEFAULT,
 			'Authorization' => 'token ' . $token,
 		];
 
