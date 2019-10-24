@@ -36,10 +36,6 @@ trait Files {
 		return (bool) $this->close();
 	}
 
-	private function read() {
-		return fread( $this->handle );
-	}
-
 	private function write( string $data ) {
 		return fwrite( $this->handle, $data );
 	}

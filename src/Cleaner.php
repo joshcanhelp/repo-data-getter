@@ -65,9 +65,12 @@ class Cleaner {
 	 *
 	 * @return string
 	 */
-	public static function commaSeparateArray( array $texts ): string {
-		$texts = implode( ', ', $texts );
-		return self::text( $texts );
+	public static function commaSeparateArray( $texts ): string {
+		if (empty($texts) || !is_array($texts)) {
+			return '';
+		}
+
+		return self::text( implode( ', ', $texts ) );
 	}
 
 	/**
@@ -75,8 +78,8 @@ class Cleaner {
 	 *
 	 * @return array
 	 */
-	public static function jsonDecode( string $json ): array {
-		return json_decode( $json, true );
+	public static function jsonDecode( ?string $json ): array {
+		return empty( $json ) ? [] : json_decode( $json, true );
 	}
 
 	/**

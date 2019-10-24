@@ -34,12 +34,51 @@ final class GitHub extends HttpClient {
 
 		if ( empty( $opts ) ) {
 			$opts = [
-				'base_uri' => 'https://api.github.com/repos/',
+				'base_uri' => 'https://api.github.com/',
 				'timeout'  => self::DEFAULT_TIMEOUT,
 			];
 		}
 
+		$this->baseUrl = $opts['base_uri'] ?? null;
+
 		parent::__construct( $opts );
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	public function getOrgRepos( string $name ): array {
+		$path = 'orgs/' . $name . '/repos?type=public&sort=full_name&per_page=100';
+		$headers = $this->makeCustomHeaders( [ 'Accept' => self::HEADER_TOPICS ] );
+
+		try {
+			return $this->getPaginated( $path, $headers );
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Org Repos for "%s": %s', $name, $e->getMessage() ) );
+			return [];
+		}
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	public function getRepoIssues( string $name ): array {
+		$path = 'repos/' . $name . '/issues';
+
+		try {
+			$issuesData = $this->getPaginated( $path );
+			return [
+				'count' => count($issuesData),
+				'latest' => $issuesData[0]['created_at'],
+			];
+		} catch ( \Exception $e ) {
+			$this->logger->log( sprintf( 'Failed getting Org Repos for "%s": %s', $name, $e->getMessage() ) );
+			return [];
+		}
 	}
 
 	/**
@@ -52,10 +91,10 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getRepo( string $name ): array {
-		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_TOPICS ] );
+		$headers = $this->makeCustomHeaders( [ 'Accept' => self::HEADER_TOPICS ] );
 
 		try {
-			$responseJson =  $this->getContents( $name, $headers );
+			$responseJson =  $this->getContents( 'repos/' . $name, $headers );
 			return Cleaner::jsonDecode( $responseJson );
 		} catch ( \Exception $e ) {
 			$this->logger->log( sprintf( 'Failed getting Repo data for %s: %s', $name, $e->getMessage() ) );
@@ -73,8 +112,8 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getCommunity( string $name ): array {
-		$path = $name . '/community/profile';
-		$headers = array_merge( $this->baseHeaders, [ 'Accept' => self::HEADER_COMMUNITY ] );
+		$path = 'repos/' . $name . '/community/profile';
+		$headers = $this->makeCustomHeaders( [ 'Accept' => self::HEADER_COMMUNITY ] );
 
 		try {
 			$responseJson = $this->getContents( $path, $headers );
@@ -95,7 +134,7 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getLatestRelease( string $name ): array {
-		$path = $name . '/releases/latest';
+		$path = 'repos/' . $name . '/releases/latest';
 
 		try {
 			$responseJson = $this->getContents( $path, $this->baseHeaders );
@@ -116,7 +155,7 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getTrafficRefs( string $name ): array {
-		$path = $name . '/traffic/popular/referrers';
+		$path = 'repos/' . $name . '/traffic/popular/referrers';
 
 		try {
 			$responseJson = $this->getContents( $path, $this->baseHeaders );
@@ -133,7 +172,7 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getTrafficViews( string $name ): array {
-		$path = $name . '/traffic/views';
+		$path = 'repos/' . $name . '/traffic/views';
 
 		try {
 			$responseJson = $this->getContents( $path, $this->baseHeaders );
@@ -150,7 +189,7 @@ final class GitHub extends HttpClient {
 	 * @return array
 	 */
 	public function getTrafficClones( string $name ): array {
-		$path = $name . '/traffic/clones';
+		$path = 'repos/' . $name . '/traffic/clones';
 
 		try {
 			$responseJson = $this->getContents( $path, $this->baseHeaders );
@@ -167,7 +206,8 @@ final class GitHub extends HttpClient {
 	 *
 	 * @return array
 	 */
-	private function getPrevious( string $repoName, string $type ): array {
+	private function getPrevious( string $repoName, string $type ): array
+	{
 		$repoFileName = Cleaner::repoFileName( $repoName );
 
 		if ( ! isset( $this->cache[ $repoFileName ] ) ) {
@@ -176,5 +216,15 @@ final class GitHub extends HttpClient {
 		}
 
 		return $this->cache[ $repoFileName ][ $type ];
+	}
+
+	/**
+	 * @param array $headers
+	 *
+	 * @return array
+	 */
+	private function makeCustomHeaders( array $headers ) : array
+	{
+		return array_merge( $this->baseHeaders, $headers );
 	}
 }
