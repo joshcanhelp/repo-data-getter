@@ -72,7 +72,12 @@ foreach ( $repoNames as $repoName ) {
 		'Repo' => $gh->getRepo(),
 		'LatestRelease' => $gh->getLatestRelease(),
 		'PullRequests' => $gh->getPullRequests(),
-	];
+        'Issues' => ['count' => 0],
+    ];
+
+    if (isset( $repoData['Repo']['open_issues_count'] )) {
+        $repoData['Issues']['count'] = $repoData['Repo']['open_issues_count'] - $repoData['PullRequests']['count'];
+    }
 
 	$repoIsPrivate = isset( $repoData['Repo']['private'] ) && $repoData['Repo']['private'];
 	$repoCanPush   = isset( $repoData['Repo']['permissions'] ) && $repoData['Repo']['permissions']['push'];

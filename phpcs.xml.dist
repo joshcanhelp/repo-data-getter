@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="WP-Auth0" namespace="WPAuth0\CS\Standard">
+
+    <!-- Only check PHP files. -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Show progress, show the error codes for each message (source). -->
+    <arg value="sp"/>
+
+    <!-- Strip the filepaths down to the relevant bit. -->
+    <arg name="basepath" value="."/>
+
+    <!-- Show coloured output, if available. -->
+    <arg name="colors"/>
+
+    <config name="testVersion" value="7.0"/>
+    <rule ref="PHPCompatibility"/>
+</ruleset>

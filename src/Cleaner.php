@@ -82,11 +82,11 @@ class Cleaner
     }
 
     /**
-     * @param string $json
+     * @param null|string $json
      *
      * @return array
      */
-    public static function jsonDecode( ?string $json ): array
+    public static function jsonDecode( $json ): array
     {
         return empty($json) ? [] : json_decode($json, true);
     }
@@ -124,7 +124,7 @@ class Cleaner
     {
         $orgNames = array_map(
             function ($el) {
-                return static::orgName($el); 
+                return static::orgName($el);
             }, $repoNames
         );
         return array_unique($orgNames);

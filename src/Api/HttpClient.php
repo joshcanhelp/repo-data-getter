@@ -176,10 +176,10 @@ class HttpClient
      *
      * @return null|string
      */
-    private function getNextLink( array $headers ) : ?string
+    private function getNextLink( array $headers ) : string
     {
         if (empty($headers['Link'])) {
-            return null;
+            return '';
         }
 
         $link = $headers['Link'][0];
@@ -194,7 +194,7 @@ class HttpClient
         }
 
         if (false === $link_next_key) {
-            return null;
+            return '';
         }
 
         $link_next = explode(';', $link_split[$link_next_key])[0];

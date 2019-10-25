@@ -7,7 +7,7 @@ class WriteJson
 
     use Files;
 
-    public function __construct( string $fileName, ?string $group = null )
+    public function __construct( string $fileName, $group = null )
     {
         $path = 'json' . ( $group ? '/' . $group : '' ) . '/' . $fileName . '.json';
         $this->setWriteHandle($path);
