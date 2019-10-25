@@ -61,15 +61,17 @@ foreach( $orgNames as $orgName ) {
 	$orgInfoCsvs[$orgName]  = new WriteInfoCsv( $orgName );
 }
 
-$gh = new GitHub( getenv('GITHUB_READ_TOKEN'), $logger );
-$cc = new CodeCov( getenv('CODECOV_READ_TOKEN'), $logger );
 foreach ( $repoNames as $repoName ) {
+    $cc = new CodeCov( $repoName, getenv('CODECOV_READ_TOKEN'), $logger );
+    $gh = new GitHub( $repoName, getenv('GITHUB_READ_TOKEN'), $logger );
+
 	$orgName = Cleaner::orgName( $repoName );
 	$repoFileName = Cleaner::repoFileName( $repoName );
 
 	$repoData = [
-		'Repo' => $gh->getRepo( $repoName ),
-		'LatestRelease' => $gh->getLatestRelease( $repoName ),
+		'Repo' => $gh->getRepo(),
+		'LatestRelease' => $gh->getLatestRelease(),
+		'PullRequests' => $gh->getPullRequests(),
 	];
 
 	$repoIsPrivate = isset( $repoData['Repo']['private'] ) && $repoData['Repo']['private'];
@@ -77,25 +79,15 @@ foreach ( $repoNames as $repoName ) {
 
 	// No community data if repo is private.
 	if ( ! $repoIsPrivate ) {
-		$repoData['Community'] = $gh->getCommunity( $repoName );
-
-		$repoData['CI'] = '';
-		$circleCiConfig = 'https://github.com/' . $repoName . '/tree/master/.circleci/config.yml';
-		$travisCiConfig = 'https://github.com/' . $repoName . '/tree/master/.travis.yml';
-		if ( HttpClient::fileExists( $circleCiConfig ) ) {
-			$repoData['CI'] = 'Circle';
-		} elseif ( HttpClient::fileExists( $travisCiConfig ) ) {
-			$repoData['CI'] = 'Travis';
-		}
-
-		$repoData['CodeCov'] = $cc->getCoverage( $repoName );
+		$repoData['Community'] = $gh->getCommunity();
+		$repoData['CI'] = $gh->getCiType();
+		$repoData['CodeCov'] = $cc->getCoverage();
 	}
 
 	// No traffic data if GitHub token cannot push; no traffic counted if private.
 	if ( ! $repoIsPrivate && $repoCanPush ) {
-		$repoData['TrafficClones'] = $gh->getTrafficClones( $repoName );
-		$repoData['TrafficRefs'] = $gh->getTrafficRefs( $repoName );
-		$repoData['TrafficViews'] = $gh->getTrafficViews( $repoName );
+		$repoData['TrafficClones'] = $gh->getTrafficClones();
+		$repoData['TrafficViews'] = $gh->getTrafficViews();
 	}
 
 	///
@@ -125,13 +117,6 @@ foreach ( $repoNames as $repoName ) {
 		}
 	}
 	$repoStatCsv->putClose();
-
-	if ( ! empty( $repoData['TrafficRefs'] ) ) {
-		$referrerCsv->addData( $repoData['TrafficRefs'] );
-	}
-
-	$jsonFile = new WriteJson( $repoFileName );
-	$jsonFile->save( $repoData );
 }
 
 foreach( $orgNames as $orgName ) {

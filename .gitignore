@@ -4,5 +4,5 @@ vendor
 # ignore files in data folders
 test-data
 data/csv/*.csv
-data/json/*.json
+data/json/**/*.json
 data/logs/*.txt

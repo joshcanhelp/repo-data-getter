@@ -28,9 +28,9 @@ if (!$org_name) {
 
 echo "✅ Getting repos for {$org_name}\n";
 
-$gh = new GitHub( getenv('GITHUB_READ_TOKEN'), $logger );
+$gh = new GitHub( $org_name, getenv('GITHUB_READ_TOKEN'), $logger );
 
-$org_repos = $gh->getOrgRepos($org_name);
+$org_repos = $gh->getOrgRepos();
 if (!$org_repos) {
     echo "❌ No org repos found\n";
     echo $logger->out();

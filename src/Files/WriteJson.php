@@ -2,21 +2,23 @@
 
 namespace DxSdk\Data\Files;
 
-class WriteJson {
+class WriteJson
+{
 
-	use Files;
+    use Files;
 
-	const FILEPATH = 'json/%s.json';
+    public function __construct( string $fileName, ?string $group = null )
+    {
+        $path = 'json' . ( $group ? '/' . $group : '' ) . '/' . $fileName . '.json';
+        $this->setWriteHandle($path);
+    }
 
-	public function __construct( string $fileName ) {
-		$this->setWriteHandle( sprintf( self::FILEPATH, $fileName . SEPARATOR . DATE_NOW ) );
-	}
-
-	/**
-	 * @param array $data
-	 */
-	public function save( array $data ) {
-		$this->write( json_encode( $data ) );
-		$this->close();
-	}
+    /**
+     * @param string $data
+     */
+    public function save( string $data )
+    {
+        $this->write($data);
+        $this->close();
+    }
 }
