@@ -28,15 +28,23 @@ foreach( $allCsvFiles as $fileName ) {
     fclose($handle);
 
     $handle = fopen($csvDir . $fileName, 'w');
+
     foreach($csvArray as $index => $row) {
         if (0 === $index) {
-            $row[3] = 'PullRequests' . SEPARATOR . 'count';
-            $row[5] = 'Issues' . SEPARATOR . 'count';
+            $row[] = 'PullRequests' . SEPARATOR . 'count';
+            $row[] = 'Issues' . SEPARATOR . 'count';
+
             fputcsv($handle, $row);
             continue;
         }
 
-        $row[3] = 0;
+        if (!isset($row[3])||!isset($row[5])) {
+            echo "Empty row on {$fileName} ...\n";
+            continue;
+        }
+
+        $row[] = 0;
+        $row[] = 0;
         fputcsv($handle, $row);
     }
 }

@@ -8,13 +8,15 @@ class WriteStatsCsv extends WriteCsv
 
     const ELEMENTS = [
         'Repo' . SEPARATOR . 'stargazers_count',
-        'PullRequests' . SEPARATOR . 'count',
+        'Repo' . SEPARATOR . 'subscribers_count',
         'Repo' . SEPARATOR . 'forks',
-        'Issues' . SEPARATOR . 'count',
+        'Repo' . SEPARATOR . 'open_issues_count',
         'TrafficClones' . SEPARATOR . 'count',
         'TrafficClones' . SEPARATOR . 'uniques',
         'TrafficViews' . SEPARATOR . 'count',
         'TrafficViews' . SEPARATOR . 'uniques',
+        'PullRequests' . SEPARATOR . 'count',
+        'Issues' . SEPARATOR . 'count',
     ];
 
     private $data = [];
