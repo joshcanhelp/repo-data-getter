@@ -28,6 +28,7 @@ Set up your `.env` with a [GitHub token](https://help.github.com/en/github/authe
 GITHUB_READ_TOKEN="GitHub token with read access"
 CODECOV_READ_TOKEN="CodeCov token with read access"
 REPO_CSV_URL="URL to repo CSV"
+OUTPUT_CSV_DIR="Path to local output directory"
 ```
 
 The GitHub token user will need to have push access to get traffic data ([more information](https://help.github.com/en/github/visualizing-repository-data-with-graphs/viewing-traffic-to-a-repository)).
