@@ -1,22 +1,12 @@
 <?php
-set_time_limit(0);
-date_default_timezone_set ( 'Europe/London' );
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/_bootstrap.php';
 
-require 'vendor/autoload.php';
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
 
-use Dotenv\Dotenv;
 use DxSdk\Data\Api\GitHub;
 use DxSdk\Data\Files\WriteOrgCsv;
 use DxSdk\Data\Logger;
-
-$dotenv = Dotenv::create(__DIR__);
-$dotenv->load();
-
-// Date/time to use in file names.
-define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
-define( 'SEPARATOR', '--' );
-define( 'DATE_NOW', date( 'Y-m-d_H-i-s' ) );
-define( 'TIME_NOW', date( 'U' ) );
 
 $logger = new Logger();
 

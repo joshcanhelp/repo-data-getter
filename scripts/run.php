@@ -1,8 +1,8 @@
 <?php
-set_time_limit(0);
-date_default_timezone_set ( 'Europe/London' );
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/_bootstrap.php';
 
-require 'vendor/autoload.php';
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
 
 use DxSdk\Data\Cleaner;
 use DxSdk\Data\Logger;
@@ -14,18 +14,6 @@ use DxSdk\Data\Api\CodeCov;
 use DxSdk\Data\Files\WriteStatsCsv;
 use DxSdk\Data\Files\WriteInfoCsv;
 use DxSdk\Data\Files\WriteReferrerCsv;
-use DxSdk\Data\Files\WriteJson;
-
-use Dotenv\Dotenv;
-
-$dotenv = Dotenv::create(__DIR__);
-$dotenv->load();
-
-// Date/time to use in file names.
-define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
-define( 'SEPARATOR', '--' );
-define( 'DATE_NOW', date( 'Y-m-d_H-i-s' ) );
-define( 'TIME_NOW', date( 'U' ) );
 
 $logger = new Logger();
 
@@ -35,12 +23,14 @@ $logger = new Logger();
 // All repos are stored in the "All Repos" sheet and updated with every sheet update.
 // That sheet is published as CSV from File > Publish to Web
 //
-$repoCsvUrl = getenv('REPO_CSV_URL');
+$repoCsvUrl = getRepoCsv();
 try {
-	$repoCsvNames = HttpClient::getUrlAsString( $repoCsvUrl );
+	$repoCsvNames = file_exists($repoCsvUrl) ?
+		file_get_contents($repoCsvUrl) :
+		HttpClient::getUrlAsString($repoCsvUrl);
 	$repoNames = Cleaner::repoNamesArray( $repoCsvNames );
 } catch ( \Exception $e ) {
-	$logger->log( 'Failed getting repos from Google CSV: ' . $e->getMessage() )->save();
+	$logger->log( 'Failed getting repos from CSV: ' . $e->getMessage() )->save();
 	exit;
 }
 

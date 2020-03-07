@@ -1,14 +1,8 @@
 <?php
-require 'vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/_bootstrap.php';
 
-use Dotenv\Dotenv;
-
-$dotenv = Dotenv::create(__DIR__);
-$dotenv->load();
-
-// Date/time to use in file names.
-define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
-define( 'SEPARATOR', '--' );
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
 
 $csvDir = DATA_SAVE_PATH_SLASHED . 'csv/';
 $allCsvFiles = scandir($csvDir, SCANDIR_SORT_DESCENDING);

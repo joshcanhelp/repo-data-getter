@@ -1,10 +1,9 @@
 <?php
-set_time_limit(0);
-date_default_timezone_set ( 'Europe/London' );
+require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/_bootstrap.php';
 
-require 'vendor/autoload.php';
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
 
-use Dotenv\Dotenv;
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 use DxSdk\Data\Api\CodeCov;
@@ -12,15 +11,6 @@ use DxSdk\Data\Cleaner;
 use DxSdk\Data\Files\WriteStatsCsv;
 use DxSdk\Data\Files\WriteInfoCsv;
 use DxSdk\Data\Logger;
-
-$dotenv = Dotenv::create(__DIR__);
-$dotenv->load();
-
-// Date/time to use in file names.
-define( 'DATA_SAVE_PATH_SLASHED', dirname(__FILE__) . '/data/' );
-define( 'SEPARATOR', '--' );
-define( 'DATE_NOW', date( 'Y-m-d_H-i-s' ) );
-define( 'TIME_NOW', date( 'U' ) );
 
 $logger = new Logger();
 
@@ -30,9 +20,15 @@ if (!$orgName) {
     exit;
 }
 
+$topic = $argv[2] ?? null;
+if (!$topic) {
+    $logger->log( 'Missing topic name' )->save();
+    exit;
+}
+
 try {
     $searchResults = HttpClient::getUrlAsString(
-        GitHub::API_BASE_URL . 'search/repositories?per_page=100&q=org:' . $orgName . '+topic:dx-sdk+is:public',
+        GitHub::API_BASE_URL . 'search/repositories?per_page=100&q=org:' . $orgName . '+topic:' . $topic . '+is:public',
         [
             'Accept' => GitHub::HEADER_TOPICS,
             'Authorization' => 'token ' . getenv('GITHUB_READ_TOKEN'),
