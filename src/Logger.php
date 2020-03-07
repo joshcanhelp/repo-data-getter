@@ -11,8 +11,13 @@ class Logger
     use Files;
 
     private $theLog = [];
+    private $filePrefix = [];
 
-    /**
+    public function __construct(string $filePrefix = '') {
+        $this->filePrefix = $filePrefix;
+    }
+
+	/**
      * @param string $msg
      *
      * @return Logger
@@ -36,10 +41,15 @@ class Logger
      */
     public function save(): bool
     {
-        echo $this->out();
         if (isset($_SERVER['REQUEST_TIME_FLOAT']) ) {
             $this->log('Done in ' . round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 1) . 's');
         }
-        return $this->writeToFile('logs/' . DATE_NOW . '.txt', $this->out());
+
+        $fileName = DATE_NOW . '.txt';
+        if ($this->filePrefix) {
+            $fileName = $this->filePrefix . SEPARATOR . $fileName;
+        }
+
+        return $this->writeToFile('logs/' . $fileName, $this->out());
     }
 }

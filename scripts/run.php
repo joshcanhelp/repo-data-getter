@@ -2,8 +2,6 @@
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/_bootstrap.php';
 
-define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
-
 use DxSdk\Data\Cleaner;
 use DxSdk\Data\Logger;
 
@@ -15,7 +13,9 @@ use DxSdk\Data\Files\WriteStatsCsv;
 use DxSdk\Data\Files\WriteInfoCsv;
 use DxSdk\Data\Files\WriteReferrerCsv;
 
-$logger = new Logger();
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
+
+$logger = new Logger(COMMAND_NAME);
 
 ////
 ///

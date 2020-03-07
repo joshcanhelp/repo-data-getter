@@ -31,7 +31,7 @@ REPO_CSV_URL="URL to repo CSV"
 OUTPUT_CSV_DIR="Path to local output directory"
 ```
 
-The GitHub token user will need to have push access to get traffic data ([more information](https://help.github.com/en/github/visualizing-repository-data-with-graphs/viewing-traffic-to-a-repository)).
+The GitHub token user will need to have push access to get traffic data ([more information](https://help.github.com/en/github/visualizing-repository-data-with-graphs/viewing-traffic-to-a-repository)). This token is not technically required but is necessary if you're pulling many repos, need access to private/internal repos, or want to include traffic data.
 
 The repo CSV should be just a simple 1-column list of repo names, including the organization. An example could be:
 
@@ -42,6 +42,8 @@ joshcanhelp/instaday
 ```
 
 You can also use a Google Sheet here by going to **File > Publish to the web > Link > CSV** and adding that link. Make sure the the CSV being published is only a single column of valid repos. Any value without `"/"` will be skipped.
+
+The `OUTPUT_CSV_DIR` should be a path to an existing directly where the generated files will be saved.
 
 ## Running scripts
 

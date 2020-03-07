@@ -86,7 +86,7 @@ final class GitHub extends HttpClient
     public function getLatestRelease(): array
     {
         $path = 'repos/' . $this->repoName . '/releases/latest';
-        return $this->getSafe($this->repoName, $path);
+        return $this->getSafe($this->repoName, $path, [], ['log_404' => false]);
     }
 
     /**

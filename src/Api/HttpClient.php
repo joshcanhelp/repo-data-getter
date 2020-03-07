@@ -100,10 +100,11 @@ class HttpClient
      * @param string $name
      * @param string $path
      * @param array  $headers
+     * @param array  $opts Additional options.
      *
      * @return array
      */
-    protected function getSafe( string $name, string $path, array $headers = [] ): array
+    protected function getSafe( string $name, string $path, array $headers = [], array $opts = [] ): array
     {
         $headers = array_merge($this->baseHeaders, $headers);
         $group = str_replace('/'. $name, '', $path);
@@ -114,7 +115,9 @@ class HttpClient
         } catch ( \Exception $e ) {
 
             if (404 === $e->getCode() ) {
-                $this->logger->log(sprintf('Failed getting %s: Not Found', $path));
+                if ( $opts['log_404'] ?? false ) {
+                    $this->logger->log(sprintf('Failed getting %s: Not Found', $path));
+                }
                 return [];
             }
 

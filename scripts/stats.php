@@ -2,8 +2,6 @@
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/_bootstrap.php';
 
-define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
-
 use DxSdk\Data\Api\HttpClient;
 use DxSdk\Data\Api\GitHub;
 use DxSdk\Data\Api\CodeCov;
@@ -12,7 +10,9 @@ use DxSdk\Data\Files\WriteStatsCsv;
 use DxSdk\Data\Files\WriteInfoCsv;
 use DxSdk\Data\Logger;
 
-$logger = new Logger();
+define( 'COMMAND_NAME', str_replace( [__DIR__.'/', '.php'], '', __FILE__ ) );
+
+$logger = new Logger(COMMAND_NAME);
 
 $orgName = $argv[1] ?? null;
 if (!$orgName) {
